@@ -1,0 +1,75 @@
+import express from "express";
+import pool from "../db";
+import { getExamByCourseId, getQuestionsByExamId, createSubmission, saveAnswer } from "../models/Exams";
+import { AuthRequest } from "../middlewares/auth";
+
+export const getCourseExam = async (req: AuthRequest, res: express.Response) => {
+    try {
+        const { id } = req.params;
+        const exam = await getExamByCourseId(Number(id));
+        if (!exam) {
+            return res.status(404).json({ success: false, data: null, message: "Exam not found for this course" });
+        }
+        const questions = await getQuestionsByExamId(exam.id);
+        const questionsWithoutAnswers = questions.map(q => {
+            const { correct_option, ...rest } = q;
+            return rest;
+        });
+
+        return res.status(200).json({ success: true, data: { exam, questions: questionsWithoutAnswers }, message: "Exam fetched" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, data: null, message: "Internal server error" });
+    }
+};
+
+export const submitExam = async (req: AuthRequest, res: express.Response) => {
+    try {
+        const { id } = req.params;
+        const { answers } = req.body; // Array of { questionId, selectedOption, theoryAnswer }
+        const userId = req.user?.id;
+        if (!userId) return res.sendStatus(401);
+
+        const exam = await getExamByCourseId(Number(id));
+        if (!exam) return res.status(404).json({ success: false, message: "Exam not found" });
+
+        const questions = await getQuestionsByExamId(exam.id);
+        let objectiveScore = 0;
+
+        // 1. Create submission record
+        const submissionId = await createSubmission(userId, exam.id, 0); // Temporary score
+
+        // 2. Process answers
+        for (const q of questions) {
+            const userAnswer = answers.find((a: any) => a.questionId === q.id);
+            let score = 0;
+            let theoryAnswer = null;
+            let selectedOption = null;
+
+            if (q.type === 'objective') {
+                selectedOption = userAnswer?.selectedOption;
+                if (selectedOption === q.correct_option) {
+                    score = 1;
+                    objectiveScore++;
+                }
+            } else if (q.type === 'theory') {
+                theoryAnswer = userAnswer?.theoryAnswer;
+                score = 0; // To be marked by admin
+            }
+
+            await saveAnswer(submissionId, q.id, { selectedOption, theoryAnswer, score });
+        }
+
+        // 3. Update objective score in submission
+        await pool.execute('UPDATE exam_submissions SET objective_score = ? WHERE id = ?', [objectiveScore, submissionId]);
+
+        return res.status(200).json({
+            success: true,
+            data: { submissionId, objectiveScore, status: 'pending' },
+            message: "Exam submitted successfully. Theory questions are pending grading."
+        });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, data: null, message: "Internal server error" });
+    }
+};
