@@ -54,6 +54,8 @@ src/
 - [x] Paystack Payment Initialization and Webhook handling.
 - [x] Student: List paid courses (purchased successfully).
 - [x] Admin: CRUD for Exams and Questions.
+- [x] Course cover image upload and static serving.
+- [x] Lesson video link support (external links).
 - [x] Admin management for users, courses, and lessons with Bunny.net support.
 
 ## 🔑 Environment Variables

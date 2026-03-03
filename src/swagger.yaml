@@ -44,6 +44,9 @@ components:
           type: string
         description:
           type: string
+        cover_image:
+          type: string
+          nullable: true
         price:
           type: number
         created_at:
@@ -63,8 +66,13 @@ components:
           type: string
         video_id:
           type: string
+          nullable: true
+        video_link:
+          type: string
+          nullable: true
         library_id:
           type: string
+          nullable: true
         order_index:
           type: integer
 

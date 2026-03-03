@@ -5,6 +5,7 @@ export interface Course extends RowDataPacket {
     id: number;
     title: string;
     description: string;
+    cover_image: string;
     price: number;
     created_at: Date;
 }

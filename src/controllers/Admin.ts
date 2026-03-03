@@ -5,7 +5,8 @@ import { getAllUsers } from "../models/Users";
 import { uploadVideoToBunny } from "../helpers/bunny";
 import { createCertificate, createExam, updateExam, deleteExam, addQuestion, updateQuestion, deleteQuestion } from "../models/Exams";
 import { sendCertificateEmail } from "../helpers/email";
-
+import fs from 'fs';
+import path from 'path';
 
 export const adminGetUsers = async (req: express.Request, res: express.Response) => {
     try {
@@ -20,11 +21,27 @@ export const adminGetUsers = async (req: express.Request, res: express.Response)
 export const adminCreateCourse = async (req: express.Request, res: express.Response) => {
     try {
         const { title, description, price } = req.body;
+        let coverImagePath = null;
+
+        if (req.file) {
+            const fileName = `${Date.now()}-${req.file.originalname}`;
+            const uploadsDir = path.join(__dirname, '../../uploads');
+
+            // Ensure directory exists
+            if (!fs.existsSync(uploadsDir)) {
+                fs.mkdirSync(uploadsDir, { recursive: true });
+            }
+
+            const uploadPath = path.join(uploadsDir, fileName);
+            fs.writeFileSync(uploadPath, req.file.buffer);
+            coverImagePath = `/uploads/${fileName}`;
+        }
+
         const [result] = await pool.execute<ResultSetHeader>(
-            'INSERT INTO courses (title, description, price) VALUES (?, ?, ?)',
-            [title, description, price]
+            'INSERT INTO courses (title, description, price, cover_image) VALUES (?, ?, ?, ?)',
+            [title, description, price, coverImagePath]
         );
-        return res.status(201).json({ success: true, data: { id: result.insertId }, message: "Course created" });
+        return res.status(201).json({ success: true, data: { id: result.insertId, coverImage: coverImagePath }, message: "Course created" });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, message: "Internal server error" });
@@ -37,7 +54,6 @@ export const adminCreateLesson = async (req: express.Request, res: express.Respo
         const { title, content, orderIndex, videoLink } = req.body;
         let { videoId, libraryId } = req.body;
 
-        // handle video upload if file is present
         if (req.file) {
             console.log(`Uploading video file: ${req.file.originalname}`);
             videoId = await uploadVideoToBunny(req.file.buffer, req.file.originalname);
