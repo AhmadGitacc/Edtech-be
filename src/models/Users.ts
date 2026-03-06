@@ -6,6 +6,7 @@ export interface User extends RowDataPacket {
     username: string;
     email: string;
     password?: string;
+    salt?: string;
     role: 'student' | 'admin';
     created_at: Date;
 }
@@ -34,9 +35,19 @@ export const getUserById = async (id: number): Promise<User | null> => {
     return rows[0] || null;
 };
 
-export const getAllUsers = async (): Promise<User[]> => {
+export const getUsers = async (): Promise<User[]> => {
     const [rows] = await pool.execute<User[]>(
         'SELECT id, username, email, role, created_at FROM users'
     );
     return rows;
+};
+
+export const deleteUserById = async (id: number): Promise<void> => {
+    await pool.execute('DELETE FROM users WHERE id = ?', [id]);
+};
+
+export const updateUserById = async (id: number, values: Record<string, any>): Promise<void> => {
+    const setClause = Object.keys(values).map(key => `${key} = ?`).join(', ');
+    const params = [...Object.values(values), id];
+    await pool.execute(`UPDATE users SET ${setClause} WHERE id = ?`, params);
 };

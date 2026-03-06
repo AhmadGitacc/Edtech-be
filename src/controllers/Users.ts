@@ -17,7 +17,7 @@ export const getAllUsers = async (req: express.Request, res: express.Response) =
 export const deleteUser = async (req: express.Request, res: express.Response) => {
     try {
         const { id } = req.params
-        const deletedUser = await deleteUserById(id)
+        const deletedUser = await deleteUserById(Number(id))
 
         res.json({ "user deleted": deletedUser })
 
@@ -32,23 +32,26 @@ export const updateUser = async (req: express.Request, res: express.Response) =>
         const { id } = req.params
         const { email, username, password } = req.body
 
-        const user = await getUserById(id)
+        const user = await getUserById(Number(id))
 
         if (!user) {
             return res.status(400).json("user doesn't exist")
         }
-        const salt = random()
 
-        if (email) user.email = email
-        if (username) user.username = username
+        const updateValues: any = {}
+        if (email) updateValues.email = email
+        if (username) updateValues.username = username
         if (password) {
             const salt = random();
-            user.authentication.salt = salt;
-            user.authentication.password = authentication(salt, password);
+            updateValues.salt = salt;
+            updateValues.password = authentication(salt, password);
         }
 
-        await user.save()
-        return res.status(200).json(user)
+        if (Object.keys(updateValues).length > 0) {
+            await updateUserById(Number(id), updateValues)
+        }
+
+        return res.status(200).json({ ...user, ...updateValues })
 
     } catch (err) {
         console.log(err)

@@ -1,7 +1,7 @@
 import express from "express";
 import pool from "../db";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { getAllUsers } from "../models/Users";
+import { getUsers } from "../models/Users";
 import { uploadVideoToBunny } from "../helpers/bunny";
 import { createCertificate, createExam, updateExam, deleteExam, addQuestion, updateQuestion, deleteQuestion } from "../models/Exams";
 import { sendCertificateEmail } from "../helpers/email";
@@ -10,7 +10,7 @@ import path from 'path';
 
 export const adminGetUsers = async (req: express.Request, res: express.Response) => {
     try {
-        const users = await getAllUsers();
+        const users = await getUsers();
         return res.status(200).json({ success: true, data: users, message: "Users fetched" });
     } catch (err) {
         console.error(err);
