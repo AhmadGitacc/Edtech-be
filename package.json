@@ -1,5 +1,5 @@
 {
-  "name": "nodeprac",
+  "name": "edtech-be",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
@@ -45,12 +45,14 @@
     "express": "^5.2.1",
     "jsonwebtoken": "^9.0.3",
     "lodash": "^4.17.21",
-    "mongoose": "^9.1.1",
     "multer": "^2.0.2",
     "mysql2": "^3.17.1",
     "resend": "^6.9.3",
     "swagger-ui-express": "^5.0.1",
     "uuid": "^9.0.1",
     "yamljs": "^0.3.0"
+  },
+  "engines": {
+    "node": ">=22.0.0"
   }
 }
