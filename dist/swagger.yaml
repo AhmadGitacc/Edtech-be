@@ -1,0 +1,644 @@
+openapi: 3.0.0
+info:
+  title: EdTech Platform API
+  description: API documentation for the EdTech platform with student and admin roles, video lectures, and certificate issuance.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8989
+    description: Local server
+
+components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: auth_token
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        role:
+          type: string
+          enum: [student, admin]
+        created_at:
+          type: string
+          format: date-time
+
+    Course:
+      type: object
+      properties:
+        id:
+          type: integer
+        title:
+          type: string
+        description:
+          type: string
+        cover_image:
+          type: string
+          nullable: true
+        price:
+          type: number
+        created_at:
+          type: string
+          format: date-time
+
+    Lesson:
+      type: object
+      properties:
+        id:
+          type: integer
+        course_id:
+          type: integer
+        title:
+          type: string
+        content:
+          type: string
+        video_id:
+          type: string
+          nullable: true
+        video_link:
+          type: string
+          nullable: true
+        library_id:
+          type: string
+          nullable: true
+        order_index:
+          type: integer
+
+    ApiResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+          nullable: true
+
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, username, password]
+              properties:
+                email: { type: string }
+                username: { type: string }
+                password: { type: string }
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Authenticate user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /courses:
+    get:
+      tags: [Courses]
+      summary: Get all courses
+      responses:
+        '200':
+          description: List of courses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Course'
+                  message: { type: string }
+
+  /courses/{id}:
+    get:
+      tags: [Courses]
+      summary: Get course details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Course details with lessons
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    allOf:
+                      - $ref: '#/components/schemas/Course'
+                      - type: object
+                        properties:
+                          lessons:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Lesson'
+                  message: { type: string }
+
+  /lessons/{id}:
+    get:
+      tags: [Lessons]
+      summary: Get lesson details
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Lesson details
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    $ref: '#/components/schemas/Lesson'
+                  message: { type: string }
+
+  /lessons/{id}/complete:
+    post:
+      tags: [Lessons]
+      summary: Mark lesson as complete
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Lesson marked as complete
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /my-courses:
+    get:
+      tags: [Courses]
+      summary: Get courses user has paid for
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of paid courses
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Course'
+                  message: { type: string }
+
+  /courses/{id}/exam:
+# ... (existing /courses/{id}/exam)
+# ...
+  /admin/courses/{id}/lessons:
+# ... (existing /admin/courses/{id}/lessons)
+# ...
+  /admin/submissions/{id}/approve:
+    post:
+      tags: [Admin]
+      summary: Approve submission & issue certificate
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Approved and certificate sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /admin/courses/{id}/exam:
+    post:
+      tags: [Admin]
+      summary: Create an exam for a course
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                passPercentage: { type: number }
+      responses:
+        '201':
+          description: Exam created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /admin/exams/{id}:
+    patch:
+      tags: [Admin]
+      summary: Update an exam
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                passPercentage: { type: number }
+      responses:
+        '200':
+          description: Exam updated
+    delete:
+      tags: [Admin]
+      summary: Delete an exam
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Exam deleted
+
+  /admin/exams/{id}/questions:
+    post:
+      tags: [Admin]
+      summary: Add a question to an exam
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type: { type: string, enum: [objective, theory] }
+                question_text: { type: string }
+                options: { type: array, items: { type: string } }
+                correct_option: { type: integer }
+      responses:
+        '201':
+          description: Question added
+
+  /admin/questions/{id}:
+    patch:
+      tags: [Admin]
+      summary: Update a question
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type: { type: string, enum: [objective, theory] }
+                question_text: { type: string }
+                options: { type: array, items: { type: string } }
+                correct_option: { type: integer }
+      responses:
+        '200':
+          description: Question updated
+    delete:
+      tags: [Admin]
+      summary: Delete a question
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Question deleted
+    get:
+      tags: [Exams]
+      summary: Get exam questions
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Exam and questions (answers hidden)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /courses/{id}/exam/submit:
+    post:
+      tags: [Exams]
+      summary: Submit exam answers
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answers:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      questionId: { type: integer }
+                      selectedOption: { type: integer }
+                      theoryAnswer: { type: string }
+      responses:
+        '200':
+          description: Exam submitted
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /payments/initialize:
+    post:
+      tags: [Payments]
+      summary: Initialize payment session
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                courseId: { type: integer }
+      responses:
+        '200':
+          description: Payment initialized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /payments/webhook:
+    post:
+      tags: [Payments]
+      summary: Paystack Webhook
+      responses:
+        '200':
+          description: Webhook received
+
+  /admin/users:
+    get:
+      tags: [Admin]
+      summary: List all users
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success: { type: boolean }
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+                  message: { type: string }
+
+  /admin/courses:
+    post:
+      tags: [Admin]
+      summary: Create a course
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                description: { type: string }
+                price: { type: number }
+      responses:
+        '201':
+          description: Course created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /admin/courses/{id}/lessons:
+    post:
+      tags: [Admin]
+      summary: Create a lesson for a course
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                content: { type: string }
+                orderIndex: { type: integer }
+                videoId: { type: string }
+                libraryId: { type: string }
+                video: { type: string, format: binary }
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                content: { type: string }
+                orderIndex: { type: integer }
+                videoId: { type: string }
+                libraryId: { type: string }
+      responses:
+        '201':
+          description: Lesson created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /admin/exams/pending:
+    get:
+      tags: [Admin]
+      summary: List pending exams
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of pending submissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /admin/submissions/{id}/grade:
+    patch:
+      tags: [Admin]
+      summary: Grade theory questions
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                theoryScore: { type: number }
+      responses:
+        '200':
+          description: Graded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+
+  /admin/submissions/{id}/approve:
+    post:
+      tags: [Admin]
+      summary: Approve submission & issue certificate
+      security:
+        - cookieAuth: []
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        '200':
+          description: Approved and certificate sent
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
