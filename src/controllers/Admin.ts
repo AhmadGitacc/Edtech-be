@@ -60,7 +60,6 @@ export const adminCreateLesson = async (req: express.Request, res: express.Respo
             libraryId 
         } = req.body;
 
-        // Log incoming data for easier debugging in Hostinger Runtime Logs
         console.log("Creating Lesson with data:", { id, title, videoLink, videoId });
 
         const [result] = await pool.execute<ResultSetHeader>(
@@ -74,7 +73,7 @@ export const adminCreateLesson = async (req: express.Request, res: express.Respo
                 videoId ?? null,
                 videoLink ?? null,
                 libraryId ?? null,
-                orderIndex ?? 0 // Default to 0 if not provided
+                orderIndex ?? 0 
             ]
         );
 
@@ -185,8 +184,8 @@ export const adminApproveSubmission = async (req: express.Request, res: express.
 export const adminCreateExam = async (req: express.Request, res: express.Response) => {
     try {
         const { id } = req.params; // courseId
-        const { passPercentage } = req.body;
-        const examId = await createExam(Number(id), passPercentage);
+        const { passPercentage, title, duration } = req.body;
+        const examId = await createExam(Number(id), passPercentage, title, duration);
         return res.status(201).json({ success: true, data: { id: examId }, message: "Exam created" });
     } catch (err) {
         console.error(err);

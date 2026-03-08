@@ -49,7 +49,6 @@ const adminCreateLesson = async (req, res) => {
     try {
         const { id } = req.params; // courseId
         const { title, content, orderIndex, videoLink, videoId, libraryId } = req.body;
-        // Log incoming data for easier debugging in Hostinger Runtime Logs
         console.log("Creating Lesson with data:", { id, title, videoLink, videoId });
         const [result] = await db_1.default.execute(`INSERT INTO lessons 
             (course_id, title, content, video_id, video_link, library_id, order_index) 
@@ -60,7 +59,7 @@ const adminCreateLesson = async (req, res) => {
             videoId ?? null,
             videoLink ?? null,
             libraryId ?? null,
-            orderIndex ?? 0 // Default to 0 if not provided
+            orderIndex ?? 0
         ]);
         return res.status(201).json({
             success: true,
@@ -149,8 +148,8 @@ exports.adminApproveSubmission = adminApproveSubmission;
 const adminCreateExam = async (req, res) => {
     try {
         const { id } = req.params; // courseId
-        const { passPercentage } = req.body;
-        const examId = await (0, Exams_1.createExam)(Number(id), passPercentage);
+        const { passPercentage, title, duration } = req.body;
+        const examId = await (0, Exams_1.createExam)(Number(id), passPercentage, title, duration);
         return res.status(201).json({ success: true, data: { id: examId }, message: "Exam created" });
     }
     catch (err) {
