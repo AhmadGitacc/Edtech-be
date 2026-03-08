@@ -196,8 +196,8 @@ export const adminCreateExam = async (req: express.Request, res: express.Respons
 export const adminUpdateExam = async (req: express.Request, res: express.Response) => {
     try {
         const { id } = req.params; // examId
-        const { passPercentage } = req.body;
-        await updateExam(Number(id), passPercentage);
+        const { passPercentage, title, duration } = req.body;
+        await updateExam(Number(id), passPercentage, title, duration);
         return res.status(200).json({ success: true, message: "Exam updated" });
     } catch (err) {
         console.error(err);

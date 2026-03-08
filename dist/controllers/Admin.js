@@ -161,8 +161,8 @@ exports.adminCreateExam = adminCreateExam;
 const adminUpdateExam = async (req, res) => {
     try {
         const { id } = req.params; // examId
-        const { passPercentage } = req.body;
-        await (0, Exams_1.updateExam)(Number(id), passPercentage);
+        const { passPercentage, title, duration } = req.body;
+        await (0, Exams_1.updateExam)(Number(id), passPercentage, title, duration);
         return res.status(200).json({ success: true, message: "Exam updated" });
     }
     catch (err) {
