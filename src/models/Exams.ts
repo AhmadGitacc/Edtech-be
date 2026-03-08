@@ -47,16 +47,26 @@ export const getQuestionsByExamId = async (examId: number): Promise<Question[]> 
     return rows;
 };
 
-export const createExam = async (courseId: number, passPercentage: number): Promise<number> => {
+export const createExam = async (
+    courseId: number,
+    passPercentage: number,
+    title?: string,
+    duration?: number
+): Promise<number> => {
     const [result] = await pool.execute<ResultSetHeader>(
-        'INSERT INTO exams (course_id, pass_percentage) VALUES (?, ?)',
-        [courseId, passPercentage]
+        'INSERT INTO exams (course_id, pass_percentage, title, duration) VALUES (?, ?, ?, ?)',
+        [
+            courseId ?? null,
+            passPercentage ?? 70,
+            title ?? "Final Assessment",
+            duration ?? 30
+        ]
     );
     return result.insertId;
 };
 
-export const updateExam = async (examId: number, passPercentage: number): Promise<void> => {
-    await pool.execute('UPDATE exams SET pass_percentage = ? WHERE id = ?', [passPercentage, examId]);
+export const updateExam = async (examId: number, passPercentage: number, title?: string, duration?: number): Promise<void> => {
+    await pool.execute('UPDATE exams SET pass_percentage = ?, title = ?, duration = ? WHERE id = ?', [passPercentage, title ?? "Final Assessment", duration ?? 30, examId]);
 };
 
 export const deleteExam = async (examId: number): Promise<void> => {

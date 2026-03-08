@@ -16,13 +16,18 @@ const getQuestionsByExamId = async (examId) => {
     return rows;
 };
 exports.getQuestionsByExamId = getQuestionsByExamId;
-const createExam = async (courseId, passPercentage) => {
-    const [result] = await db_1.default.execute('INSERT INTO exams (course_id, pass_percentage) VALUES (?, ?)', [courseId, passPercentage]);
+const createExam = async (courseId, passPercentage, title, duration) => {
+    const [result] = await db_1.default.execute('INSERT INTO exams (course_id, pass_percentage, title, duration) VALUES (?, ?, ?, ?)', [
+        courseId ?? null,
+        passPercentage ?? 70,
+        title ?? "Final Assessment",
+        duration ?? 30
+    ]);
     return result.insertId;
 };
 exports.createExam = createExam;
-const updateExam = async (examId, passPercentage) => {
-    await db_1.default.execute('UPDATE exams SET pass_percentage = ? WHERE id = ?', [passPercentage, examId]);
+const updateExam = async (examId, passPercentage, title, duration) => {
+    await db_1.default.execute('UPDATE exams SET pass_percentage = ?, title = ?, duration = ? WHERE id = ?', [passPercentage, title ?? "Final Assessment", duration ?? 30, examId]);
 };
 exports.updateExam = updateExam;
 const deleteExam = async (examId) => {
