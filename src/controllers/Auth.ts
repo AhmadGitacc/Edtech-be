@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { createUser, getUserByEmail } from "../models/Users";
 import jwt from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+const JWT_SECRET = process.env.JWT_SECRET;
 
 export const login = async (req: express.Request, res: express.Response) => {
     try {

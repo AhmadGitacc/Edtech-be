@@ -52,25 +52,13 @@ export const adminCreateLesson = async (req: express.Request, res: express.Respo
     try {
         const { id } = req.params; // courseId
         const { title, content, orderIndex, videoLink } = req.body;
-        let { videoId, libraryId } = req.body;
-
-        if (req.file) {
-            console.log(`Uploading video file: ${req.file.originalname}`);
-            videoId = await uploadVideoToBunny(req.file.buffer, req.file.originalname);
-            libraryId = process.env.BUNNY_LIBRARY_ID;
-            console.log(`Video uploaded successfully. ID: ${videoId}`);
-        }
-
-        // if (!videoId || !libraryId) {
-        //     return res.status(400).json({ success: false, message: "Video ID and Library ID are required (or upload a video file)" });
-        // }
-
+        
         const [result] = await pool.execute<ResultSetHeader>(
-            'INSERT INTO lessons (course_id, title, content, video_id, video_link, library_id, order_index) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [id, title, content, videoId, videoLink, libraryId, orderIndex]
+            'INSERT INTO lessons (course_id, title, content, video_link, order_index) VALUES (?, ?, ?, ?, ?, ?, ?)',
+            [id, title, content,  videoLink, orderIndex]
         );
 
-        return res.status(201).json({ success: true, data: { id: result.insertId, videoId, videoLink, libraryId }, message: "Lesson created" });
+        return res.status(201).json({ success: true, data: { id: result.insertId, videoLink }, message: "Lesson created" });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, message: "Internal server error" });

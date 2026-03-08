@@ -16,7 +16,7 @@ const path_1 = __importDefault(require("path"));
 const fs_1 = __importDefault(require("fs"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
-const swaggerPath = path_1.default.resolve(__dirname, '../swagger.yaml');
+const swaggerPath = path_1.default.resolve(__dirname, '../src/swagger.yaml');
 let swaggerDocument;
 if (fs_1.default.existsSync(swaggerPath)) {
     swaggerDocument = yamljs_1.default.load(swaggerPath);

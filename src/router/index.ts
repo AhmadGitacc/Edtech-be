@@ -35,7 +35,8 @@ export default (): express.Router => {
     // Admin
     router.get('/admin/users', isAuthenticated, isAdmin, adminGetUsers);
     router.post('/admin/courses', isAuthenticated, isAdmin, upload.single('coverImage'), adminCreateCourse);
-    router.post('/admin/courses/:id/lessons', isAuthenticated, isAdmin, upload.single('video'), adminCreateLesson);
+    router.post('/admin/courses/:id/lessons', isAuthenticated, isAdmin, adminCreateLesson);
+    // router.post('/admin/courses/:id/lessons', isAuthenticated, isAdmin, upload.single('video'), adminCreateLesson);
 
     // Exam Management
     router.get('/admin/exams/pending', isAuthenticated, isAdmin, adminGetPendingExams);

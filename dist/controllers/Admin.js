@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminApproveSubmission = exports.adminGradeSubmission = exports.adminGetPendingExams = exports.adminCreateLesson = exports.adminCreateCourse = exports.adminGetUsers = void 0;
 const db_1 = __importDefault(require("../db"));
 const Users_1 = require("../models/Users");
-const bunny_1 = require("../helpers/bunny");
 const Exams_1 = require("../models/Exams");
 const email_1 = require("../helpers/email");
 const fs_1 = __importDefault(require("fs"));
@@ -50,18 +49,8 @@ const adminCreateLesson = async (req, res) => {
     try {
         const { id } = req.params; // courseId
         const { title, content, orderIndex, videoLink } = req.body;
-        let { videoId, libraryId } = req.body;
-        if (req.file) {
-            console.log(`Uploading video file: ${req.file.originalname}`);
-            videoId = await (0, bunny_1.uploadVideoToBunny)(req.file.buffer, req.file.originalname);
-            libraryId = process.env.BUNNY_LIBRARY_ID;
-            console.log(`Video uploaded successfully. ID: ${videoId}`);
-        }
-        // if (!videoId || !libraryId) {
-        //     return res.status(400).json({ success: false, message: "Video ID and Library ID are required (or upload a video file)" });
-        // }
-        const [result] = await db_1.default.execute('INSERT INTO lessons (course_id, title, content, video_id, video_link, library_id, order_index) VALUES (?, ?, ?, ?, ?, ?, ?)', [id, title, content, videoId, videoLink, libraryId, orderIndex]);
-        return res.status(201).json({ success: true, data: { id: result.insertId, videoId, videoLink, libraryId }, message: "Lesson created" });
+        const [result] = await db_1.default.execute('INSERT INTO lessons (course_id, title, content, video_link, order_index) VALUES (?, ?, ?, ?, ?, ?, ?)', [id, title, content, videoLink, orderIndex]);
+        return res.status(201).json({ success: true, data: { id: result.insertId, videoLink }, message: "Lesson created" });
     }
     catch (err) {
         console.error(err);

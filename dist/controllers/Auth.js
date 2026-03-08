@@ -7,7 +7,7 @@ exports.signup = exports.login = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const Users_1 = require("../models/Users");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret';
+const JWT_SECRET = process.env.JWT_SECRET;
 const login = async (req, res) => {
     try {
         const { email, password } = req.body;
