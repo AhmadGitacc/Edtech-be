@@ -32,8 +32,7 @@ exports.default = () => {
     // Admin
     router.get('/admin/users', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetUsers);
     router.post('/admin/courses', auth_1.isAuthenticated, auth_1.isAdmin, upload.single('coverImage'), Admin_1.adminCreateCourse);
-    router.post('/admin/courses/:id/lessons', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminCreateLesson);
-    // router.post('/admin/courses/:id/lessons', isAuthenticated, isAdmin, upload.single('video'), adminCreateLesson);
+    router.post('/admin/courses/:id/lessons', auth_1.isAuthenticated, auth_1.isAdmin, upload.none(), Admin_1.adminCreateLesson);
     // Exam Management
     router.get('/admin/exams/pending', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetPendingExams);
     router.patch('/admin/submissions/:id/grade', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGradeSubmission);

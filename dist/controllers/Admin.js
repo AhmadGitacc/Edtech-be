@@ -48,13 +48,37 @@ exports.adminCreateCourse = adminCreateCourse;
 const adminCreateLesson = async (req, res) => {
     try {
         const { id } = req.params; // courseId
-        const { title, content, orderIndex, videoLink } = req.body;
-        const [result] = await db_1.default.execute('INSERT INTO lessons (course_id, title, content, video_link, order_index) VALUES (?, ?, ?, ?, ?, ?, ?)', [id, title, content, videoLink, orderIndex]);
-        return res.status(201).json({ success: true, data: { id: result.insertId, videoLink }, message: "Lesson created" });
+        const { title, content, orderIndex, videoLink, videoId, libraryId } = req.body;
+        // Log incoming data for easier debugging in Hostinger Runtime Logs
+        console.log("Creating Lesson with data:", { id, title, videoLink, videoId });
+        const [result] = await db_1.default.execute(`INSERT INTO lessons 
+            (course_id, title, content, video_id, video_link, library_id, order_index) 
+            VALUES (?, ?, ?, ?, ?, ?, ?)`, [
+            id ?? null,
+            title ?? null,
+            content ?? null,
+            videoId ?? null,
+            videoLink ?? null,
+            libraryId ?? null,
+            orderIndex ?? 0 // Default to 0 if not provided
+        ]);
+        return res.status(201).json({
+            success: true,
+            data: {
+                id: result.insertId,
+                videoId,
+                videoLink,
+                libraryId
+            },
+            message: "Lesson created successfully"
+        });
     }
     catch (err) {
-        console.error(err);
-        return res.status(500).json({ success: false, message: "Internal server error" });
+        console.error("Database Error in adminCreateLesson:", err);
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
+        });
     }
 };
 exports.adminCreateLesson = adminCreateLesson;
