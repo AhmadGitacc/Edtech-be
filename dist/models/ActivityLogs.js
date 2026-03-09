@@ -5,8 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getLogs = exports.createLog = void 0;
 const db_1 = __importDefault(require("../db"));
-const createLog = async (userId, action, details) => {
-    const [result] = await db_1.default.execute('INSERT INTO activity_logs (user_id, action, details) VALUES (?, ?, ?)', [userId, action, details]);
+const createLog = async (userId, username, action, details) => {
+    const [result] = await db_1.default.execute('INSERT INTO activity_logs (user_id, username, action, details) VALUES (?, ?, ?, ?)', [userId, username, action, details]);
     return result.insertId;
 };
 exports.createLog = createLog;

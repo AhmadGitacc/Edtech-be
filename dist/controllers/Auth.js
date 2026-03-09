@@ -26,7 +26,7 @@ const login = async (req, res) => {
         const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
         // Update status and log activity
         await (0, Users_1.setUserStatus)(user.id, true);
-        await (0, ActivityLogs_1.createLog)(user.id, 'LOGIN', `User logged in from ${req.ip}`);
+        await (0, ActivityLogs_1.createLog)(user.id, user.username, 'LOGIN', `User logged in from ${req.ip}`);
         res.cookie('auth_token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -76,7 +76,7 @@ const logout = async (req, res) => {
         const user = req.user;
         if (user) {
             await (0, Users_1.setUserStatus)(user.id, false);
-            await (0, ActivityLogs_1.createLog)(user.id, 'LOGOUT', 'User logged out');
+            await (0, ActivityLogs_1.createLog)(user.id, user.username, 'LOGOUT', 'User logged out');
         }
         res.clearCookie('auth_token');
         return res.status(200).json({ success: true, message: "Logged out successfully" });

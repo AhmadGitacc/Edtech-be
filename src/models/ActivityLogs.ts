@@ -4,15 +4,16 @@ import { ResultSetHeader, RowDataPacket } from 'mysql2';
 export interface ActivityLog extends RowDataPacket {
     id: number;
     user_id: number;
+    username: string;
     action: string;
     details: string;
     created_at: Date;
 }
 
-export const createLog = async (userId: number, action: string, details: string): Promise<number> => {
+export const createLog = async (userId: number, username: string, action: string, details: string): Promise<number> => {
     const [result] = await pool.execute<ResultSetHeader>(
-        'INSERT INTO activity_logs (user_id, action, details) VALUES (?, ?, ?)',
-        [userId, action, details]
+        'INSERT INTO activity_logs (user_id, username, action, details) VALUES (?, ?, ?, ?)',
+        [userId, username, action, details]
     );
     return result.insertId;
 };

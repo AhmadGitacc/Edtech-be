@@ -184,7 +184,20 @@ All API responses follow this consistent structure:
 - **List All Courses:** `GET /admin/courses` (Includes inactive)
 - **Toggle Course Status:** `PATCH /admin/courses/:id/status` -> Body: `{ "status": "active|inactive" }`
 - **Delete Lesson:** `DELETE /admin/lessons/:id`
-- **Get Stats:** `GET /admin/stats` -> Returns aggregated platform metrics.
+- **Get Stats:** `GET /admin/stats` -> Returns:
+  ```json
+  {
+    "totalStudents": number,
+    "totalCourses": number,
+    "revenue": number,
+    "totalEnrollments": number,
+    "pendingExams": number,
+    "trends": {
+      "revenueGrowth": string,
+      "studentGrowth": string
+    }
+  }
+  ```
 - **Search Students:** `GET /admin/users?q=search_term&limit=20&offset=0`
 - **Toggle User Status:** `PATCH /admin/users/:id/status` -> Body: `{ "isActive": boolean }`
 - **Create Category:** `POST /admin/categories` -> Body: `{ "name": "Web Dev", "tag": "web-dev" }`

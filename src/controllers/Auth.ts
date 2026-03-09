@@ -34,7 +34,7 @@ export const login = async (req: express.Request, res: express.Response) => {
 
         // Update status and log activity
         await setUserStatus(user.id, true);
-        await createLog(user.id, 'LOGIN', `User logged in from ${req.ip}`);
+        await createLog(user.id, user.username, 'LOGIN', `User logged in from ${req.ip}`);
 
         res.cookie('auth_token', token, {
             httpOnly: true,
@@ -91,7 +91,7 @@ export const logout = async (req: express.Request, res: express.Response) => {
         const user = (req as any).user;
         if (user) {
             await setUserStatus(user.id, false);
-            await createLog(user.id, 'LOGOUT', 'User logged out');
+            await createLog(user.id, user.username, 'LOGOUT', 'User logged out');
         }
 
         res.clearCookie('auth_token');
