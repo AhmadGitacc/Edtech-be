@@ -180,9 +180,11 @@ All API responses follow this consistent structure:
   - Body: `{ "type": "objective|theory", "question_text": "...", "options": ["A", "B"], "correct_option": 0 }`
 
 ### 5. Admin Utilities
+- **Update Course:** `PATCH /admin/courses/:id` -> Body: `formData` (supports `coverImage`)
 - **Delete Course:** `DELETE /admin/courses/:id`
 - **List All Courses:** `GET /admin/courses` (Includes inactive)
 - **Toggle Course Status:** `PATCH /admin/courses/:id/status` -> Body: `{ "status": "active|inactive" }`
+- **Update Lesson:** `PATCH /admin/lessons/:id` -> Body: `formData`
 - **Delete Lesson:** `DELETE /admin/lessons/:id`
 - **Get Stats:** `GET /admin/stats` -> Returns:
   ```json

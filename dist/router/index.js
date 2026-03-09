@@ -37,10 +37,12 @@ exports.default = () => {
     router.get('/admin/users', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetUsers);
     router.patch('/admin/users/:id/status', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminToggleUserStatus);
     router.post('/admin/courses', auth_1.isAuthenticated, auth_1.isAdmin, upload.single('coverImage'), Admin_1.adminCreateCourse);
+    router.patch('/admin/courses/:id', auth_1.isAuthenticated, auth_1.isAdmin, upload.single('coverImage'), Admin_1.adminUpdateCourse);
     router.get('/admin/courses', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminListCourses);
     router.delete('/admin/courses/:id', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminDeleteCourse);
     router.patch('/admin/courses/:id/status', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminToggleCourseStatus);
     router.post('/admin/courses/:id/lessons', auth_1.isAuthenticated, auth_1.isAdmin, upload.none(), Admin_1.adminCreateLesson);
+    router.patch('/admin/lessons/:id', auth_1.isAuthenticated, auth_1.isAdmin, upload.none(), Admin_1.adminUpdateLesson);
     router.delete('/admin/lessons/:id', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminDeleteLesson);
     router.get('/admin/stats', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetStats);
     router.post('/admin/categories', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminCreateCategory);

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.setCourseStatus = exports.deleteLesson = exports.deleteCourse = exports.getProgress = exports.trackProgress = exports.getLessonById = exports.getLessonsByCourseId = exports.getCourseById = exports.getAllCourses = void 0;
+exports.updateLesson = exports.setCourseStatus = exports.deleteLesson = exports.updateCourse = exports.deleteCourse = exports.getProgress = exports.trackProgress = exports.getLessonById = exports.getLessonsByCourseId = exports.getCourseById = exports.getAllCourses = void 0;
 const db_1 = __importDefault(require("../db"));
 const getAllCourses = async (filterActive = false) => {
     let query = 'SELECT * FROM courses';
@@ -42,6 +42,14 @@ const deleteCourse = async (id) => {
     await db_1.default.execute('DELETE FROM courses WHERE id = ?', [id]);
 };
 exports.deleteCourse = deleteCourse;
+const updateCourse = async (id, data) => {
+    const fields = Object.keys(data).map(key => `${key} = ?`).join(', ');
+    const values = Object.values(data);
+    if (fields.length === 0)
+        return;
+    await db_1.default.execute(`UPDATE courses SET ${fields} WHERE id = ?`, [...values, id]);
+};
+exports.updateCourse = updateCourse;
 const deleteLesson = async (id) => {
     await db_1.default.execute('DELETE FROM lessons WHERE id = ?', [id]);
 };
@@ -50,4 +58,12 @@ const setCourseStatus = async (id, status) => {
     await db_1.default.execute('UPDATE courses SET status = ? WHERE id = ?', [status, id]);
 };
 exports.setCourseStatus = setCourseStatus;
+const updateLesson = async (id, data) => {
+    const fields = Object.keys(data).map(key => `${key} = ?`).join(', ');
+    const values = Object.values(data);
+    if (fields.length === 0)
+        return;
+    await db_1.default.execute(`UPDATE lessons SET ${fields} WHERE id = ?`, [...values, id]);
+};
+exports.updateLesson = updateLesson;
 //# sourceMappingURL=Courses.js.map

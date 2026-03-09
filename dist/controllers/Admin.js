@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminApproveSubmission = exports.adminGradeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminCreateCourse = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
+exports.adminUpdateLesson = exports.adminUpdateCourse = exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminApproveSubmission = exports.adminGradeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminCreateCourse = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
 const db_1 = __importDefault(require("../db"));
 const Users_1 = require("../models/Users");
 const Exams_1 = require("../models/Exams");
@@ -323,4 +323,34 @@ const adminToggleCourseStatus = async (req, res) => {
     }
 };
 exports.adminToggleCourseStatus = adminToggleCourseStatus;
+const adminUpdateCourse = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = { ...req.body };
+        if (req.file) {
+            updateData.cover_image = `/uploads/${req.file.filename}`;
+        }
+        await (0, Courses_1.updateCourse)(Number(id), updateData);
+        return res.status(200).json({ success: true, message: "Course updated successfully" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+exports.adminUpdateCourse = adminUpdateCourse;
+const adminUpdateLesson = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = { ...req.body };
+        // Support for dynamic lesson updates
+        await (0, Courses_1.updateLesson)(Number(id), updateData);
+        return res.status(200).json({ success: true, message: "Lesson updated successfully" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+exports.adminUpdateLesson = adminUpdateLesson;
 //# sourceMappingURL=Admin.js.map

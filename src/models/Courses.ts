@@ -69,10 +69,24 @@ export const deleteCourse = async (id: number): Promise<void> => {
     await pool.execute('DELETE FROM courses WHERE id = ?', [id]);
 };
 
+export const updateCourse = async (id: number, data: Partial<Course>): Promise<void> => {
+    const fields = Object.keys(data).map(key => `${key} = ?`).join(', ');
+    const values = Object.values(data);
+    if (fields.length === 0) return;
+    await pool.execute(`UPDATE courses SET ${fields} WHERE id = ?`, [...values, id]);
+};
+
 export const deleteLesson = async (id: number): Promise<void> => {
     await pool.execute('DELETE FROM lessons WHERE id = ?', [id]);
 };
 
 export const setCourseStatus = async (id: number, status: 'active' | 'inactive'): Promise<void> => {
     await pool.execute('UPDATE courses SET status = ? WHERE id = ?', [status, id]);
+};
+
+export const updateLesson = async (id: number, data: Partial<Lesson>): Promise<void> => {
+    const fields = Object.keys(data).map(key => `${key} = ?`).join(', ');
+    const values = Object.values(data);
+    if (fields.length === 0) return;
+    await pool.execute(`UPDATE lessons SET ${fields} WHERE id = ?`, [...values, id]);
 };

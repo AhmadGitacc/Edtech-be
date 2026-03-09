@@ -36,7 +36,7 @@ src/
 - **users**: `id, username, email, password, role, is_active (BOOLEAN), created_at`
 - **courses**: `id, title, description, price, category_tag (FK), status (active|inactive), created_at`
 - **categories**: `id, name, category_tag (UNIQUE), created_at`
-- **activity_logs**: `id, user_id, action, details, created_at`
+- **activity_logs**: `id, user_id, username, action, details, created_at`
 - **lessons**: `id, course_id, title, content, video_id, library_id, order_index`
 - **user_progress**: `user_id, lesson_id, completed` (Composite Key)
 - **exams**: `id, course_id, pass_percentage, title, duration`

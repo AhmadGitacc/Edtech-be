@@ -5,7 +5,7 @@ import { login, signup, logout } from '../controllers/Auth';
 import { listCourses, getCourseDetails, getLessonDetails, completeLesson, getMyCourses, listCategories } from '../controllers/Courses';
 import { getCourseExam, submitExam, getUserExamHistory } from '../controllers/Exams';
 import { initializePayment, paystackWebhook } from '../controllers/Payments';
-import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminGradeSubmission, adminApproveSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion, adminDeleteCourse, adminDeleteLesson, adminGetStats, adminToggleUserStatus, adminCreateCategory, adminGetActivityLogs, adminListCourses, adminToggleCourseStatus } from '../controllers/Admin';
+import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminGradeSubmission, adminApproveSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion, adminDeleteCourse, adminDeleteLesson, adminGetStats, adminToggleUserStatus, adminCreateCategory, adminGetActivityLogs, adminListCourses, adminToggleCourseStatus, adminUpdateCourse, adminUpdateLesson } from '../controllers/Admin';
 import { isAuthenticated, isAdmin } from '../middlewares/auth';
 
 const router = express.Router();
@@ -41,10 +41,12 @@ export default (): express.Router => {
     router.get('/admin/users', isAuthenticated, isAdmin, adminGetUsers);
     router.patch('/admin/users/:id/status', isAuthenticated, isAdmin, adminToggleUserStatus);
     router.post('/admin/courses', isAuthenticated, isAdmin, upload.single('coverImage'), adminCreateCourse);
+    router.patch('/admin/courses/:id', isAuthenticated, isAdmin, upload.single('coverImage'), adminUpdateCourse);
     router.get('/admin/courses', isAuthenticated, isAdmin, adminListCourses);
     router.delete('/admin/courses/:id', isAuthenticated, isAdmin, adminDeleteCourse);
     router.patch('/admin/courses/:id/status', isAuthenticated, isAdmin, adminToggleCourseStatus);
     router.post('/admin/courses/:id/lessons', isAuthenticated, isAdmin, upload.none(), adminCreateLesson);
+    router.patch('/admin/lessons/:id', isAuthenticated, isAdmin, upload.none(), adminUpdateLesson);
     router.delete('/admin/lessons/:id', isAuthenticated, isAdmin, adminDeleteLesson);
     router.get('/admin/stats', isAuthenticated, isAdmin, adminGetStats);
     router.post('/admin/categories', isAuthenticated, isAdmin, adminCreateCategory);
