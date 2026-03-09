@@ -1,12 +1,23 @@
 import express from "express";
 import { getAllCourses, getCourseById, getLessonsByCourseId, getLessonById, trackProgress, getProgress } from "../models/Courses";
+import { getAllCategories } from "../models/Categories";
 import { getEnrollmentsByUserId } from "../models/Payments";
 import { AuthRequest } from "../middlewares/auth";
 
 export const listCourses = async (req: express.Request, res: express.Response) => {
     try {
-        const courses = await getAllCourses();
+        const courses = await getAllCourses(true); // Filter active
         return res.status(200).json({ success: true, data: courses, message: "Courses fetched successfully" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, data: null, message: "Internal server error" });
+    }
+};
+
+export const listCategories = async (req: express.Request, res: express.Response) => {
+    try {
+        const categories = await getAllCategories();
+        return res.status(200).json({ success: true, data: categories, message: "Categories fetched" });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, data: null, message: "Internal server error" });

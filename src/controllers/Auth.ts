@@ -1,6 +1,7 @@
 import express from "express";
 import bcrypt from "bcryptjs";
-import { createUser, getUserByEmail } from "../models/Users";
+import { createUser, getUserByEmail, setUserStatus } from "../models/Users";
+import { createLog } from "../models/ActivityLogs";
 import jwt from "jsonwebtoken";
 
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -27,9 +28,13 @@ export const login = async (req: express.Request, res: express.Response) => {
 
         const token = jwt.sign(
             { id: user.id, email: user.email, role: user.role },
-            JWT_SECRET,
+            JWT_SECRET!,
             { expiresIn: '24h' }
         );
+
+        // Update status and log activity
+        await setUserStatus(user.id, true);
+        await createLog(user.id, 'LOGIN', `User logged in from ${req.ip}`);
 
         res.cookie('auth_token', token, {
             httpOnly: true,
@@ -78,5 +83,21 @@ export const signup = async (req: express.Request, res: express.Response) => {
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, data: null, message: "Internal server error" });
+    }
+};
+
+export const logout = async (req: express.Request, res: express.Response) => {
+    try {
+        const user = (req as any).user;
+        if (user) {
+            await setUserStatus(user.id, false);
+            await createLog(user.id, 'LOGOUT', 'User logged out');
+        }
+
+        res.clearCookie('auth_token');
+        return res.status(200).json({ success: true, message: "Logged out successfully" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };

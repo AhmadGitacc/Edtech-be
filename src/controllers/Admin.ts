@@ -1,17 +1,37 @@
 import express from "express";
 import pool from "../db";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { getUsers } from "../models/Users";
+import { getUsers, setUserStatus, getUserStats } from "../models/Users";
 import { uploadVideoToBunny } from "../helpers/bunny";
 import { createCertificate, createExam, updateExam, deleteExam, addQuestion, updateQuestion, deleteQuestion } from "../models/Exams";
+import { deleteCourse, deleteLesson, setCourseStatus, getAllCourses } from "../models/Courses";
+import { createCategory } from "../models/Categories";
+import { getLogs } from "../models/ActivityLogs";
 import { sendCertificateEmail } from "../helpers/email";
 import fs from 'fs';
 import path from 'path';
 
 export const adminGetUsers = async (req: express.Request, res: express.Response) => {
     try {
-        const users = await getUsers();
+        const { q, limit, offset } = req.query;
+        const users = await getUsers(
+            q as string, 
+            limit ? Number(limit) : 20, 
+            offset ? Number(offset) : 0
+        );
         return res.status(200).json({ success: true, data: users, message: "Users fetched" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: `Internal server error ${err}` });
+    }
+};
+
+export const adminToggleUserStatus = async (req: express.Request, res: express.Response) => {
+    try {
+        const { id } = req.params;
+        const { isActive } = req.body;
+        await setUserStatus(Number(id), isActive);
+        return res.status(200).json({ success: true, message: `User status updated to ${isActive ? 'active' : 'inactive'}` });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, message: "Internal server error" });
@@ -93,6 +113,63 @@ export const adminCreateLesson = async (req: express.Request, res: express.Respo
             success: false, 
             message: "Internal server error" 
         });
+    }
+};
+
+export const adminDeleteCourse = async (req: express.Request, res: express.Response) => {
+    try {
+        const { id } = req.params;
+        await deleteCourse(Number(id));
+        return res.status(200).json({ success: true, message: "Course deleted successfully" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+export const adminDeleteLesson = async (req: express.Request, res: express.Response) => {
+    try {
+        const { id } = req.params;
+        await deleteLesson(Number(id));
+        return res.status(200).json({ success: true, message: "Lesson deleted successfully" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+export const adminGetStats = async (req: express.Request, res: express.Response) => {
+    try {
+        const stats = await getUserStats();
+        return res.status(200).json({ success: true, data: stats, message: "Statistics fetched" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+export const adminCreateCategory = async (req: express.Request, res: express.Response) => {
+    try {
+        const { name, tag } = req.body;
+        const categoryId = await createCategory(name, tag);
+        return res.status(201).json({ success: true, data: { id: categoryId }, message: "Category created" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+export const adminGetActivityLogs = async (req: express.Request, res: express.Response) => {
+    try {
+        const { limit, offset } = req.query;
+        const logs = await getLogs(
+            limit ? Number(limit) : 50,
+            offset ? Number(offset) : 0
+        );
+        return res.status(200).json({ success: true, data: logs, message: "Activity logs fetched" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
 
@@ -249,4 +326,30 @@ export const adminDeleteQuestion = async (req: express.Request, res: express.Res
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
+
+export const adminListCourses = async (req: express.Request, res: express.Response) => {
+    try {
+        const courses = await getAllCourses(false); // All courses
+        return res.status(200).json({ success: true, data: courses, message: "All courses fetched" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: `Internal server error ${err}` });
+    }
+};
+
+export const adminToggleCourseStatus = async (req: express.Request, res: express.Response) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        if (!['active', 'inactive'].includes(status)) {
+            return res.status(400).json({ success: false, message: "Invalid status" });
+        }
+        await setCourseStatus(Number(id), status);
+        return res.status(200).json({ success: true, message: `Course status updated to ${status}` });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: `Internal server error ${err}` });
+    }
+};
+
 

@@ -1,11 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMyCourses = exports.completeLesson = exports.getLessonDetails = exports.getCourseDetails = exports.listCourses = void 0;
+exports.getMyCourses = exports.completeLesson = exports.getLessonDetails = exports.getCourseDetails = exports.listCategories = exports.listCourses = void 0;
 const Courses_1 = require("../models/Courses");
+const Categories_1 = require("../models/Categories");
 const Payments_1 = require("../models/Payments");
 const listCourses = async (req, res) => {
     try {
-        const courses = await (0, Courses_1.getAllCourses)();
+        const courses = await (0, Courses_1.getAllCourses)(true); // Filter active
         return res.status(200).json({ success: true, data: courses, message: "Courses fetched successfully" });
     }
     catch (err) {
@@ -14,6 +15,17 @@ const listCourses = async (req, res) => {
     }
 };
 exports.listCourses = listCourses;
+const listCategories = async (req, res) => {
+    try {
+        const categories = await (0, Categories_1.getAllCategories)();
+        return res.status(200).json({ success: true, data: categories, message: "Categories fetched" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, data: null, message: "Internal server error" });
+    }
+};
+exports.listCategories = listCategories;
 const getCourseDetails = async (req, res) => {
     try {
         const { id } = req.params;

@@ -1,11 +1,11 @@
 import express from 'express';
 import multer from 'multer';
 
-import { login, signup } from '../controllers/Auth';
-import { listCourses, getCourseDetails, getLessonDetails, completeLesson, getMyCourses } from '../controllers/Courses';
-import { getCourseExam, submitExam } from '../controllers/Exams';
+import { login, signup, logout } from '../controllers/Auth';
+import { listCourses, getCourseDetails, getLessonDetails, completeLesson, getMyCourses, listCategories } from '../controllers/Courses';
+import { getCourseExam, submitExam, getUserExamHistory } from '../controllers/Exams';
 import { initializePayment, paystackWebhook } from '../controllers/Payments';
-import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminGradeSubmission, adminApproveSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion } from '../controllers/Admin';
+import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminGradeSubmission, adminApproveSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion, adminDeleteCourse, adminDeleteLesson, adminGetStats, adminToggleUserStatus, adminCreateCategory, adminGetActivityLogs, adminListCourses, adminToggleCourseStatus } from '../controllers/Admin';
 import { isAuthenticated, isAdmin } from '../middlewares/auth';
 
 const router = express.Router();
@@ -16,6 +16,10 @@ export default (): express.Router => {
     // Auth
     router.post('/auth/register', signup);
     router.post('/auth/login', login);
+    router.post('/auth/logout', isAuthenticated, logout);
+
+    // Categories
+    router.get('/categories', listCategories);
 
     // Courses & Lessons
     router.get('/courses', listCourses);
@@ -27,6 +31,7 @@ export default (): express.Router => {
     // Exams & Certificates
     router.get('/courses/:id/exam', isAuthenticated, getCourseExam);
     router.post('/courses/:id/exam/submit', isAuthenticated, submitExam);
+    router.get('/user/exams/history', isAuthenticated, getUserExamHistory);
 
     // Payments
     router.post('/payments/initialize', isAuthenticated, initializePayment);
@@ -34,8 +39,16 @@ export default (): express.Router => {
 
     // Admin
     router.get('/admin/users', isAuthenticated, isAdmin, adminGetUsers);
+    router.patch('/admin/users/:id/status', isAuthenticated, isAdmin, adminToggleUserStatus);
     router.post('/admin/courses', isAuthenticated, isAdmin, upload.single('coverImage'), adminCreateCourse);
+    router.get('/admin/courses', isAuthenticated, isAdmin, adminListCourses);
+    router.delete('/admin/courses/:id', isAuthenticated, isAdmin, adminDeleteCourse);
+    router.patch('/admin/courses/:id/status', isAuthenticated, isAdmin, adminToggleCourseStatus);
     router.post('/admin/courses/:id/lessons', isAuthenticated, isAdmin, upload.none(), adminCreateLesson);
+    router.delete('/admin/lessons/:id', isAuthenticated, isAdmin, adminDeleteLesson);
+    router.get('/admin/stats', isAuthenticated, isAdmin, adminGetStats);
+    router.post('/admin/categories', isAuthenticated, isAdmin, adminCreateCategory);
+    router.get('/admin/activity-logs', isAuthenticated, isAdmin, adminGetActivityLogs);
 
     // Exam Management
     router.get('/admin/exams/pending', isAuthenticated, isAdmin, adminGetPendingExams);

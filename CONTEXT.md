@@ -33,11 +33,13 @@ src/
 ```
 
 ## 🗄️ MySQL Schema
-- **users**: `id, username, email, password, role, created_at`
-- **courses**: `id, title, description, price, created_at`
+- **users**: `id, username, email, password, role, is_active (BOOLEAN), created_at`
+- **courses**: `id, title, description, price, category_tag (FK), status (active|inactive), created_at`
+- **categories**: `id, name, category_tag (UNIQUE), created_at`
+- **activity_logs**: `id, user_id, action, details, created_at`
 - **lessons**: `id, course_id, title, content, video_id, library_id, order_index`
 - **user_progress**: `user_id, lesson_id, completed` (Composite Key)
-- **exams**: `id, course_id, pass_percentage`
+- **exams**: `id, course_id, pass_percentage, title, duration`
 - **exam_questions**: `id, exam_id, type (objective/theory), question_text, options (JSON), correct_option`
 - **exam_submissions**: `id, user_id, exam_id, objective_score, theory_score, total_score, status, created_at`
 - **exam_answers**: `id, submission_id, question_id, selected_option, theory_answer, score`
@@ -57,6 +59,12 @@ src/
 - [x] Course cover image upload and static serving.
 - [x] Lesson video link support (external links).
 - [x] Admin management for users, courses, and lessons with Bunny.net support.
+- [x] Admin: Course/Lesson deletion and Category management.
+- [x] Admin Dashboard Analytics (Total Students, Revenue, etc.).
+- [x] Comprehensive Activity Logging.
+- [x] Dynamic Course Categories via `category_tag`.
+- [x] User Exam History tracking.
+- [x] User Active/Inactive status tracking.
 
 ## 🔑 Environment Variables
 - `DB_HOST`, `DB_USER`, `DB_PASSWORD`, `DB_NAME`

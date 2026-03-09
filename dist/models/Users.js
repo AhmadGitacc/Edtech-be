@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUserById = exports.deleteUserById = exports.getUsers = exports.getUserById = exports.getUserByEmail = exports.createUser = void 0;
+exports.getUserStats = exports.setUserStatus = exports.updateUserById = exports.deleteUserById = exports.getUsers = exports.getUserById = exports.getUserByEmail = exports.createUser = void 0;
 const db_1 = __importDefault(require("../db"));
 const createUser = async (username, email, passwordHash) => {
     const [result] = await db_1.default.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [username, email, passwordHash]);
@@ -20,8 +20,16 @@ const getUserById = async (id) => {
     return rows[0] || null;
 };
 exports.getUserById = getUserById;
-const getUsers = async () => {
-    const [rows] = await db_1.default.execute('SELECT id, username, email, role, created_at FROM users');
+const getUsers = async (search, limit = 40, offset = 0) => {
+    let query = 'SELECT id, username, email, role, is_active, created_at FROM users';
+    const params = [];
+    if (search) {
+        query += ' WHERE username LIKE ? OR email LIKE ?';
+        params.push(`%${search}%`, `%${search}%`);
+    }
+    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+    const [rows] = await db_1.default.execute(query, params);
     return rows;
 };
 exports.getUsers = getUsers;
@@ -30,9 +38,27 @@ const deleteUserById = async (id) => {
 };
 exports.deleteUserById = deleteUserById;
 const updateUserById = async (id, values) => {
-    const setClause = Object.keys(values).map(key => `${key} = ?`).join(', ');
+    const keys = Object.keys(values);
+    if (keys.length === 0)
+        return;
+    const setClause = keys.map(key => `${key} = ?`).join(', ');
     const params = [...Object.values(values), id];
     await db_1.default.execute(`UPDATE users SET ${setClause} WHERE id = ?`, params);
 };
 exports.updateUserById = updateUserById;
+const setUserStatus = async (id, isActive) => {
+    await db_1.default.execute('UPDATE users SET is_active = ? WHERE id = ?', [isActive, id]);
+};
+exports.setUserStatus = setUserStatus;
+const getUserStats = async () => {
+    const [rows] = await db_1.default.execute(`
+        SELECT 
+            (SELECT COUNT(*) FROM users WHERE role = 'student') as total_students,
+            (SELECT COUNT(*) FROM courses) as total_courses,
+            (SELECT SUM(price) FROM enrollments e JOIN courses c ON e.course_id = c.id WHERE e.status = 'success') as total_revenue,
+            (SELECT COUNT(*) FROM enrollments WHERE status = 'success') as total_enrollments
+    `);
+    return rows[0];
+};
+exports.getUserStats = getUserStats;
 //# sourceMappingURL=Users.js.map

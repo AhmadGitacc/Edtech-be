@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.submitExam = exports.getCourseExam = void 0;
+exports.getUserExamHistory = exports.submitExam = exports.getCourseExam = void 0;
 const db_1 = __importDefault(require("../db"));
 const Exams_1 = require("../models/Exams");
 const getCourseExam = async (req, res) => {
@@ -73,4 +73,23 @@ const submitExam = async (req, res) => {
     }
 };
 exports.submitExam = submitExam;
+const getUserExamHistory = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId)
+            return res.sendStatus(401);
+        const [rows] = await db_1.default.execute(`SELECT es.*, e.title as exam_title, c.title as course_title 
+             FROM exam_submissions es
+             JOIN exams e ON es.exam_id = e.id
+             JOIN courses c ON e.course_id = c.id
+             WHERE es.user_id = ?
+             ORDER BY es.created_at DESC`, [userId]);
+        return res.status(200).json({ success: true, data: rows, message: "Exam history fetched" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+exports.getUserExamHistory = getUserExamHistory;
 //# sourceMappingURL=Exams.js.map

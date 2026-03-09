@@ -46,6 +46,12 @@ All API responses follow this consistent structure:
   | `token` | string | JWT Bearer Token |
 - **Note:** Login sets an `auth_token` cookie and returns the token in the body. Store the token for subsequent `Authorization: Bearer <token>` headers.
 
+### 3. User Logout
+- **Endpoint:** `POST /auth/logout`
+- **Auth Required:** Yes
+- **Response:** `{ "success": true, "message": "Logged out successfully" }`
+- **Note:** Clears the `auth_token` cookie and marks the user as inactive.
+
 ---
 
 ## 📚 Courses & Lessons
@@ -60,6 +66,12 @@ All API responses follow this consistent structure:
   | `description` | string | Brief overview |
   | `price` | number | Cost in base units (USD/NGN) |
   | `cover_image` | string | URL path to image (e.g., `/uploads/image.png`) |
+  | `category_tag` | string | Unique tag for the category |
+  | `status` | string | `active` (Visible) |
+
+### 2. List All Categories
+- **Endpoint:** `GET /categories`
+- **Response Data:** Array of `{ "name": string, "category_tag": string }`
 
 ### 2. Get Course Details
 - **Endpoint:** `GET /courses/:id`
@@ -117,6 +129,11 @@ All API responses follow this consistent structure:
   ```
 - **Response Data:** `{ submissionId, objectiveScore, status: 'pending' }`
 
+### 3. Get Exam History
+- **Endpoint:** `GET /user/exams/history`
+- **Auth Required:** Yes
+- **Response Data:** Array of `Submission` objects including `course_title` and `exam_title`.
+
 ---
 
 ## 💳 Payments (Paystack)
@@ -151,9 +168,6 @@ All API responses follow this consistent structure:
   | `content` | string | Required |
   | `orderIndex`| integer| Required |
   | `video_link` | string | (Optional) External video URL mostly like youtube link |
-  | `video` | file | (Optional) Direct upload to Bunny.net |
-  | `videoId` | string | (Optional) Manual Bunny.net ID |
-  | `libraryId`| string | (Optional) Manual Bunny.net ID |
 
 ### 3. Exam Grading Flow
 - **Fetch Pending:** `GET /admin/exams/pending`
@@ -161,6 +175,17 @@ All API responses follow this consistent structure:
 - **Approve & Certify:** `POST /admin/submissions/:id/approve` -> Triggers certificate email.
 
 ### 4. Exam & Question CRUD
-- **Create Exam:** `POST /admin/courses/:id/exam` -> Body: `{ "passPercentage": 80 }`
+- **Create Exam:** `POST /admin/courses/:id/exam` -> Body: `{ "passPercentage": 80, "title": "Final", "duration": 30 }`
 - **Add Question:** `POST /admin/exams/:id/questions`
   - Body: `{ "type": "objective|theory", "question_text": "...", "options": ["A", "B"], "correct_option": 0 }`
+
+### 5. Admin Utilities
+- **Delete Course:** `DELETE /admin/courses/:id`
+- **List All Courses:** `GET /admin/courses` (Includes inactive)
+- **Toggle Course Status:** `PATCH /admin/courses/:id/status` -> Body: `{ "status": "active|inactive" }`
+- **Delete Lesson:** `DELETE /admin/lessons/:id`
+- **Get Stats:** `GET /admin/stats` -> Returns aggregated platform metrics.
+- **Search Students:** `GET /admin/users?q=search_term&limit=20&offset=0`
+- **Toggle User Status:** `PATCH /admin/users/:id/status` -> Body: `{ "isActive": boolean }`
+- **Create Category:** `POST /admin/categories` -> Body: `{ "name": "Web Dev", "tag": "web-dev" }`
+- **Activity Logs:** `GET /admin/activity-logs?limit=50&offset=0`

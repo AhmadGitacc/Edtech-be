@@ -8,6 +8,7 @@ export interface User extends RowDataPacket {
     password?: string;
     salt?: string;
     role: 'student' | 'admin';
+    is_active: boolean;
     created_at: Date;
 }
 
@@ -35,10 +36,19 @@ export const getUserById = async (id: number): Promise<User | null> => {
     return rows[0] || null;
 };
 
-export const getUsers = async (): Promise<User[]> => {
-    const [rows] = await pool.execute<User[]>(
-        'SELECT id, username, email, role, created_at FROM users'
-    );
+export const getUsers = async (search?: string, limit: number = 40, offset: number = 0): Promise<User[]> => {
+    let query = 'SELECT id, username, email, role, is_active, created_at FROM users';
+    const params: any[] = [];
+
+    if (search) {
+        query += ' WHERE username LIKE ? OR email LIKE ?';
+        params.push(`%${search}%`, `%${search}%`);
+    }
+
+    query += ' ORDER BY created_at DESC LIMIT ? OFFSET ?';
+    params.push(limit, offset);
+
+    const [rows] = await pool.execute<User[]>(query, params);
     return rows;
 };
 
@@ -47,7 +57,24 @@ export const deleteUserById = async (id: number): Promise<void> => {
 };
 
 export const updateUserById = async (id: number, values: Record<string, any>): Promise<void> => {
-    const setClause = Object.keys(values).map(key => `${key} = ?`).join(', ');
+    const keys = Object.keys(values);
+    if (keys.length === 0) return;
+    const setClause = keys.map(key => `${key} = ?`).join(', ');
     const params = [...Object.values(values), id];
     await pool.execute(`UPDATE users SET ${setClause} WHERE id = ?`, params);
+};
+
+export const setUserStatus = async (id: number, isActive: boolean): Promise<void> => {
+    await pool.execute('UPDATE users SET is_active = ? WHERE id = ?', [isActive, id]);
+};
+
+export const getUserStats = async (): Promise<any> => {
+    const [rows] = await pool.execute<RowDataPacket[]>(`
+        SELECT 
+            (SELECT COUNT(*) FROM users WHERE role = 'student') as total_students,
+            (SELECT COUNT(*) FROM courses) as total_courses,
+            (SELECT SUM(price) FROM enrollments e JOIN courses c ON e.course_id = c.id WHERE e.status = 'success') as total_revenue,
+            (SELECT COUNT(*) FROM enrollments WHERE status = 'success') as total_enrollments
+    `);
+    return rows[0];
 };

@@ -17,6 +17,9 @@ exports.default = () => {
     // Auth
     router.post('/auth/register', Auth_1.signup);
     router.post('/auth/login', Auth_1.login);
+    router.post('/auth/logout', auth_1.isAuthenticated, Auth_1.logout);
+    // Categories
+    router.get('/categories', Courses_1.listCategories);
     // Courses & Lessons
     router.get('/courses', Courses_1.listCourses);
     router.get('/courses/:id', Courses_1.getCourseDetails);
@@ -26,13 +29,22 @@ exports.default = () => {
     // Exams & Certificates
     router.get('/courses/:id/exam', auth_1.isAuthenticated, Exams_1.getCourseExam);
     router.post('/courses/:id/exam/submit', auth_1.isAuthenticated, Exams_1.submitExam);
+    router.get('/user/exams/history', auth_1.isAuthenticated, Exams_1.getUserExamHistory);
     // Payments
     router.post('/payments/initialize', auth_1.isAuthenticated, Payments_1.initializePayment);
     router.post('/payments/webhook', express_1.default.raw({ type: 'application/json' }), Payments_1.paystackWebhook);
     // Admin
     router.get('/admin/users', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetUsers);
+    router.patch('/admin/users/:id/status', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminToggleUserStatus);
     router.post('/admin/courses', auth_1.isAuthenticated, auth_1.isAdmin, upload.single('coverImage'), Admin_1.adminCreateCourse);
+    router.get('/admin/courses', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminListCourses);
+    router.delete('/admin/courses/:id', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminDeleteCourse);
+    router.patch('/admin/courses/:id/status', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminToggleCourseStatus);
     router.post('/admin/courses/:id/lessons', auth_1.isAuthenticated, auth_1.isAdmin, upload.none(), Admin_1.adminCreateLesson);
+    router.delete('/admin/lessons/:id', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminDeleteLesson);
+    router.get('/admin/stats', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetStats);
+    router.post('/admin/categories', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminCreateCategory);
+    router.get('/admin/activity-logs', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetActivityLogs);
     // Exam Management
     router.get('/admin/exams/pending', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetPendingExams);
     router.patch('/admin/submissions/:id/grade', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGradeSubmission);

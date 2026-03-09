@@ -1,6 +1,7 @@
 import express from "express";
 import pool from "../db";
 import { getExamByCourseId, getQuestionsByExamId, createSubmission, saveAnswer } from "../models/Exams";
+import { RowDataPacket } from "mysql2";
 import { AuthRequest } from "../middlewares/auth";
 
 export const getCourseExam = async (req: AuthRequest, res: express.Response) => {
@@ -71,5 +72,27 @@ export const submitExam = async (req: AuthRequest, res: express.Response) => {
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, data: null, message: "Internal server error" });
+    }
+};
+
+export const getUserExamHistory = async (req: AuthRequest, res: express.Response) => {
+    try {
+        const userId = req.user?.id;
+        if (!userId) return res.sendStatus(401);
+
+        const [rows] = await pool.execute<RowDataPacket[]>(
+            `SELECT es.*, e.title as exam_title, c.title as course_title 
+             FROM exam_submissions es
+             JOIN exams e ON es.exam_id = e.id
+             JOIN courses c ON e.course_id = c.id
+             WHERE es.user_id = ?
+             ORDER BY es.created_at DESC`,
+            [userId]
+        );
+
+        return res.status(200).json({ success: true, data: rows, message: "Exam history fetched" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };

@@ -3,9 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.signup = exports.login = void 0;
+exports.logout = exports.signup = exports.login = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const Users_1 = require("../models/Users");
+const ActivityLogs_1 = require("../models/ActivityLogs");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const JWT_SECRET = process.env.JWT_SECRET;
 const login = async (req, res) => {
@@ -23,6 +24,9 @@ const login = async (req, res) => {
             return res.status(401).json({ success: false, data: null, message: "Invalid credentials" });
         }
         const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
+        // Update status and log activity
+        await (0, Users_1.setUserStatus)(user.id, true);
+        await (0, ActivityLogs_1.createLog)(user.id, 'LOGIN', `User logged in from ${req.ip}`);
         res.cookie('auth_token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -67,4 +71,20 @@ const signup = async (req, res) => {
     }
 };
 exports.signup = signup;
+const logout = async (req, res) => {
+    try {
+        const user = req.user;
+        if (user) {
+            await (0, Users_1.setUserStatus)(user.id, false);
+            await (0, ActivityLogs_1.createLog)(user.id, 'LOGOUT', 'User logged out');
+        }
+        res.clearCookie('auth_token');
+        return res.status(200).json({ success: true, message: "Logged out successfully" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+exports.logout = logout;
 //# sourceMappingURL=Auth.js.map

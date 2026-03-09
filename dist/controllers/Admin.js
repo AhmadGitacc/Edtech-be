@@ -3,24 +3,41 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminApproveSubmission = exports.adminGradeSubmission = exports.adminGetPendingExams = exports.adminCreateLesson = exports.adminCreateCourse = exports.adminGetUsers = void 0;
+exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminApproveSubmission = exports.adminGradeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminCreateCourse = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
 const db_1 = __importDefault(require("../db"));
 const Users_1 = require("../models/Users");
 const Exams_1 = require("../models/Exams");
+const Courses_1 = require("../models/Courses");
+const Categories_1 = require("../models/Categories");
+const ActivityLogs_1 = require("../models/ActivityLogs");
 const email_1 = require("../helpers/email");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const adminGetUsers = async (req, res) => {
     try {
-        const users = await (0, Users_1.getUsers)();
+        const { q, limit, offset } = req.query;
+        const users = await (0, Users_1.getUsers)(q, limit ? Number(limit) : 20, offset ? Number(offset) : 0);
         return res.status(200).json({ success: true, data: users, message: "Users fetched" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: `Internal server error ${err}` });
+    }
+};
+exports.adminGetUsers = adminGetUsers;
+const adminToggleUserStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { isActive } = req.body;
+        await (0, Users_1.setUserStatus)(Number(id), isActive);
+        return res.status(200).json({ success: true, message: `User status updated to ${isActive ? 'active' : 'inactive'}` });
     }
     catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
-exports.adminGetUsers = adminGetUsers;
+exports.adminToggleUserStatus = adminToggleUserStatus;
 const adminCreateCourse = async (req, res) => {
     try {
         const { title, description, price } = req.body;
@@ -81,6 +98,65 @@ const adminCreateLesson = async (req, res) => {
     }
 };
 exports.adminCreateLesson = adminCreateLesson;
+const adminDeleteCourse = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await (0, Courses_1.deleteCourse)(Number(id));
+        return res.status(200).json({ success: true, message: "Course deleted successfully" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+exports.adminDeleteCourse = adminDeleteCourse;
+const adminDeleteLesson = async (req, res) => {
+    try {
+        const { id } = req.params;
+        await (0, Courses_1.deleteLesson)(Number(id));
+        return res.status(200).json({ success: true, message: "Lesson deleted successfully" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+exports.adminDeleteLesson = adminDeleteLesson;
+const adminGetStats = async (req, res) => {
+    try {
+        const stats = await (0, Users_1.getUserStats)();
+        return res.status(200).json({ success: true, data: stats, message: "Statistics fetched" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+exports.adminGetStats = adminGetStats;
+const adminCreateCategory = async (req, res) => {
+    try {
+        const { name, tag } = req.body;
+        const categoryId = await (0, Categories_1.createCategory)(name, tag);
+        return res.status(201).json({ success: true, data: { id: categoryId }, message: "Category created" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+exports.adminCreateCategory = adminCreateCategory;
+const adminGetActivityLogs = async (req, res) => {
+    try {
+        const { limit, offset } = req.query;
+        const logs = await (0, ActivityLogs_1.getLogs)(limit ? Number(limit) : 50, offset ? Number(offset) : 0);
+        return res.status(200).json({ success: true, data: logs, message: "Activity logs fetched" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+exports.adminGetActivityLogs = adminGetActivityLogs;
 const adminGetPendingExams = async (req, res) => {
     try {
         const [rows] = await db_1.default.execute(`SELECT es.*, u.username, u.email, e.course_id 
@@ -220,4 +296,31 @@ const adminDeleteQuestion = async (req, res) => {
     }
 };
 exports.adminDeleteQuestion = adminDeleteQuestion;
+const adminListCourses = async (req, res) => {
+    try {
+        const courses = await (0, Courses_1.getAllCourses)(false); // All courses
+        return res.status(200).json({ success: true, data: courses, message: "All courses fetched" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: `Internal server error ${err}` });
+    }
+};
+exports.adminListCourses = adminListCourses;
+const adminToggleCourseStatus = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { status } = req.body;
+        if (!['active', 'inactive'].includes(status)) {
+            return res.status(400).json({ success: false, message: "Invalid status" });
+        }
+        await (0, Courses_1.setCourseStatus)(Number(id), status);
+        return res.status(200).json({ success: true, message: `Course status updated to ${status}` });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: `Internal server error ${err}` });
+    }
+};
+exports.adminToggleCourseStatus = adminToggleCourseStatus;
 //# sourceMappingURL=Admin.js.map

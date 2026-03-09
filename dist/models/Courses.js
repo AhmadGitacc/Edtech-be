@@ -3,10 +3,14 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getProgress = exports.trackProgress = exports.getLessonById = exports.getLessonsByCourseId = exports.getCourseById = exports.getAllCourses = void 0;
+exports.setCourseStatus = exports.deleteLesson = exports.deleteCourse = exports.getProgress = exports.trackProgress = exports.getLessonById = exports.getLessonsByCourseId = exports.getCourseById = exports.getAllCourses = void 0;
 const db_1 = __importDefault(require("../db"));
-const getAllCourses = async () => {
-    const [rows] = await db_1.default.execute('SELECT * FROM courses');
+const getAllCourses = async (filterActive = false) => {
+    let query = 'SELECT * FROM courses';
+    if (filterActive) {
+        query += " WHERE status = 'active'";
+    }
+    const [rows] = await db_1.default.execute(query);
     return rows;
 };
 exports.getAllCourses = getAllCourses;
@@ -34,4 +38,16 @@ const getProgress = async (userId, courseId) => {
     return rows.map(r => r.lesson_id);
 };
 exports.getProgress = getProgress;
+const deleteCourse = async (id) => {
+    await db_1.default.execute('DELETE FROM courses WHERE id = ?', [id]);
+};
+exports.deleteCourse = deleteCourse;
+const deleteLesson = async (id) => {
+    await db_1.default.execute('DELETE FROM lessons WHERE id = ?', [id]);
+};
+exports.deleteLesson = deleteLesson;
+const setCourseStatus = async (id, status) => {
+    await db_1.default.execute('UPDATE courses SET status = ? WHERE id = ?', [status, id]);
+};
+exports.setCourseStatus = setCourseStatus;
 //# sourceMappingURL=Courses.js.map

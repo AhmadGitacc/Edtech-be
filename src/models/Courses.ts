@@ -7,6 +7,8 @@ export interface Course extends RowDataPacket {
     description: string;
     cover_image: string;
     price: number;
+    category_tag: string | null;
+    status: 'active' | 'inactive';
     created_at: Date;
 }
 
@@ -21,8 +23,12 @@ export interface Lesson extends RowDataPacket {
     order_index: number;
 }
 
-export const getAllCourses = async (): Promise<Course[]> => {
-    const [rows] = await pool.execute<Course[]>('SELECT * FROM courses');
+export const getAllCourses = async (filterActive: boolean = false): Promise<Course[]> => {
+    let query = 'SELECT * FROM courses';
+    if (filterActive) {
+        query += " WHERE status = 'active'";
+    }
+    const [rows] = await pool.execute<Course[]>(query);
     return rows;
 };
 
@@ -57,4 +63,16 @@ export const getProgress = async (userId: number, courseId: number): Promise<num
         [userId, courseId]
     );
     return rows.map(r => r.lesson_id);
+};
+
+export const deleteCourse = async (id: number): Promise<void> => {
+    await pool.execute('DELETE FROM courses WHERE id = ?', [id]);
+};
+
+export const deleteLesson = async (id: number): Promise<void> => {
+    await pool.execute('DELETE FROM lessons WHERE id = ?', [id]);
+};
+
+export const setCourseStatus = async (id: number, status: 'active' | 'inactive'): Promise<void> => {
+    await pool.execute('UPDATE courses SET status = ? WHERE id = ?', [status, id]);
 };
