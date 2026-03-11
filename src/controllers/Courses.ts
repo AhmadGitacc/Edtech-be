@@ -76,6 +76,17 @@ export const completeLesson = async (req: AuthRequest, res: express.Response) =>
     }
 };
 
+export const getCourseLessons = async (req: express.Request, res: express.Response) => {
+    try {
+        const { id } = req.params;
+        const lessons = await getLessonsByCourseId(Number(id));
+        return res.status(200).json({ success: true, data: lessons, message: "Course lessons fetched" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, data: null, message: err });
+    }
+};
+
 export const getMyCourses = async (req: AuthRequest, res: express.Response) => {
     try {
         const userId = req.user?.id;

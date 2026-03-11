@@ -23,6 +23,7 @@ exports.default = () => {
     // Courses & Lessons
     router.get('/courses', Courses_1.listCourses);
     router.get('/courses/:id', Courses_1.getCourseDetails);
+    router.get('/courses/:id/lessons', Courses_1.getCourseLessons);
     router.get('/lessons/:id', auth_1.isAuthenticated, Courses_1.getLessonDetails);
     router.post('/lessons/:id/complete', auth_1.isAuthenticated, Courses_1.completeLesson);
     router.get('/my-courses', auth_1.isAuthenticated, Courses_1.getMyCourses);
@@ -39,6 +40,7 @@ exports.default = () => {
     router.post('/admin/courses', auth_1.isAuthenticated, auth_1.isAdmin, upload.single('coverImage'), Admin_1.adminCreateCourse);
     router.patch('/admin/courses/:id', auth_1.isAuthenticated, auth_1.isAdmin, upload.single('coverImage'), Admin_1.adminUpdateCourse);
     router.get('/admin/courses', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminListCourses);
+    router.get('/admin/courses/:id/lessons', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetCourseLessons);
     router.delete('/admin/courses/:id', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminDeleteCourse);
     router.patch('/admin/courses/:id/status', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminToggleCourseStatus);
     router.post('/admin/courses/:id/lessons', auth_1.isAuthenticated, auth_1.isAdmin, upload.none(), Admin_1.adminCreateLesson);

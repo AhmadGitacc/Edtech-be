@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getMyCourses = exports.completeLesson = exports.getLessonDetails = exports.getCourseDetails = exports.listCategories = exports.listCourses = void 0;
+exports.getMyCourses = exports.getCourseLessons = exports.completeLesson = exports.getLessonDetails = exports.getCourseDetails = exports.listCategories = exports.listCourses = void 0;
 const Courses_1 = require("../models/Courses");
 const Categories_1 = require("../models/Categories");
 const Payments_1 = require("../models/Payments");
@@ -77,6 +77,18 @@ const completeLesson = async (req, res) => {
     }
 };
 exports.completeLesson = completeLesson;
+const getCourseLessons = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const lessons = await (0, Courses_1.getLessonsByCourseId)(Number(id));
+        return res.status(200).json({ success: true, data: lessons, message: "Course lessons fetched" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, data: null, message: err });
+    }
+};
+exports.getCourseLessons = getCourseLessons;
 const getMyCourses = async (req, res) => {
     try {
         const userId = req.user?.id;

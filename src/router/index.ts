@@ -2,10 +2,10 @@ import express from 'express';
 import multer from 'multer';
 
 import { login, signup, logout } from '../controllers/Auth';
-import { listCourses, getCourseDetails, getLessonDetails, completeLesson, getMyCourses, listCategories } from '../controllers/Courses';
+import { listCourses, getCourseDetails, getLessonDetails, completeLesson, getMyCourses, listCategories, getCourseLessons } from '../controllers/Courses';
 import { getCourseExam, submitExam, getUserExamHistory } from '../controllers/Exams';
 import { initializePayment, paystackWebhook } from '../controllers/Payments';
-import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminGradeSubmission, adminApproveSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion, adminDeleteCourse, adminDeleteLesson, adminGetStats, adminToggleUserStatus, adminCreateCategory, adminGetActivityLogs, adminListCourses, adminToggleCourseStatus, adminUpdateCourse, adminUpdateLesson } from '../controllers/Admin';
+import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminGradeSubmission, adminApproveSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion, adminDeleteCourse, adminDeleteLesson, adminGetStats, adminToggleUserStatus, adminCreateCategory, adminGetActivityLogs, adminListCourses, adminToggleCourseStatus, adminUpdateCourse, adminUpdateLesson, adminGetCourseLessons } from '../controllers/Admin';
 import { isAuthenticated, isAdmin } from '../middlewares/auth';
 
 const router = express.Router();
@@ -24,6 +24,7 @@ export default (): express.Router => {
     // Courses & Lessons
     router.get('/courses', listCourses);
     router.get('/courses/:id', getCourseDetails);
+    router.get('/courses/:id/lessons', getCourseLessons);
     router.get('/lessons/:id', isAuthenticated, getLessonDetails);
     router.post('/lessons/:id/complete', isAuthenticated, completeLesson);
     router.get('/my-courses', isAuthenticated, getMyCourses);
@@ -43,6 +44,7 @@ export default (): express.Router => {
     router.post('/admin/courses', isAuthenticated, isAdmin, upload.single('coverImage'), adminCreateCourse);
     router.patch('/admin/courses/:id', isAuthenticated, isAdmin, upload.single('coverImage'), adminUpdateCourse);
     router.get('/admin/courses', isAuthenticated, isAdmin, adminListCourses);
+    router.get('/admin/courses/:id/lessons', isAuthenticated, isAdmin, adminGetCourseLessons);
     router.delete('/admin/courses/:id', isAuthenticated, isAdmin, adminDeleteCourse);
     router.patch('/admin/courses/:id/status', isAuthenticated, isAdmin, adminToggleCourseStatus);
     router.post('/admin/courses/:id/lessons', isAuthenticated, isAdmin, upload.none(), adminCreateLesson);

@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminUpdateLesson = exports.adminUpdateCourse = exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminApproveSubmission = exports.adminGradeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminCreateCourse = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
+exports.adminGetCourseLessons = exports.adminUpdateLesson = exports.adminUpdateCourse = exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminApproveSubmission = exports.adminGradeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminCreateCourse = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
 const db_1 = __importDefault(require("../db"));
 const Users_1 = require("../models/Users");
 const Exams_1 = require("../models/Exams");
@@ -353,4 +353,16 @@ const adminUpdateLesson = async (req, res) => {
     }
 };
 exports.adminUpdateLesson = adminUpdateLesson;
+const adminGetCourseLessons = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const lessons = await (0, Courses_1.getLessonsByCourseId)(Number(id));
+        return res.status(200).json({ success: true, data: lessons, message: "Course lessons fetched for admin" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+exports.adminGetCourseLessons = adminGetCourseLessons;
 //# sourceMappingURL=Admin.js.map

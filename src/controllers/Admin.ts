@@ -4,7 +4,7 @@ import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { getUsers, setUserStatus, getUserStats } from "../models/Users";
 import { uploadVideoToBunny } from "../helpers/bunny";
 import { createCertificate, createExam, updateExam, deleteExam, addQuestion, updateQuestion, deleteQuestion } from "../models/Exams";
-import { deleteCourse, deleteLesson, setCourseStatus, getAllCourses, updateCourse, updateLesson } from "../models/Courses";
+import { deleteCourse, deleteLesson, setCourseStatus, getAllCourses, updateCourse, updateLesson, getLessonsByCourseId } from "../models/Courses";
 import { createCategory } from "../models/Categories";
 import { getLogs } from "../models/ActivityLogs";
 import { sendCertificateEmail } from "../helpers/email";
@@ -377,6 +377,17 @@ export const adminUpdateLesson = async (req: express.Request, res: express.Respo
         // Support for dynamic lesson updates
         await updateLesson(Number(id), updateData);
         return res.status(200).json({ success: true, message: "Lesson updated successfully" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+
+export const adminGetCourseLessons = async (req: express.Request, res: express.Response) => {
+    try {
+        const { id } = req.params;
+        const lessons = await getLessonsByCourseId(Number(id));
+        return res.status(200).json({ success: true, data: lessons, message: "Course lessons fetched for admin" });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, message: "Internal server error" });
