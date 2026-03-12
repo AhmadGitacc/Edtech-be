@@ -35,8 +35,15 @@ const deleteExam = async (examId) => {
 };
 exports.deleteExam = deleteExam;
 const addQuestion = async (examId, data) => {
-    const { type, question_text, options, correct_option } = data;
-    const [result] = await db_1.default.execute('INSERT INTO exam_questions (exam_id, type, question_text, options, correct_option) VALUES (?, ?, ?, ?, ?)', [examId, type, question_text, JSON.stringify(options), correct_option]);
+    const { type = 'objective', question_text = '', OPTIONS, correct_option = 0 } = data;
+    const finalOptions = OPTIONS || [];
+    const [result] = await db_1.default.execute('INSERT INTO exam_questions (exam_id, type, question_text, options, correct_option) VALUES (?, ?, ?, ?, ?)', [
+        examId,
+        type,
+        question_text,
+        typeof finalOptions === 'string' ? finalOptions : JSON.stringify(finalOptions),
+        correct_option ?? 0
+    ]);
     return result.insertId;
 };
 exports.addQuestion = addQuestion;

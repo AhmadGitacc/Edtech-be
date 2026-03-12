@@ -74,10 +74,24 @@ export const deleteExam = async (examId: number): Promise<void> => {
 };
 
 export const addQuestion = async (examId: number, data: any): Promise<number> => {
-    const { type, question_text, options, correct_option } = data;
+    const { 
+        type = 'objective', 
+        question_text = '', 
+        OPTIONS, 
+        correct_option = 0 
+    } = data;
+
+    const finalOptions = OPTIONS || [];
+
     const [result] = await pool.execute<ResultSetHeader>(
         'INSERT INTO exam_questions (exam_id, type, question_text, options, correct_option) VALUES (?, ?, ?, ?, ?)',
-        [examId, type, question_text, JSON.stringify(options), correct_option]
+        [
+            examId, 
+            type, 
+            question_text, 
+            typeof finalOptions === 'string' ? finalOptions : JSON.stringify(finalOptions), 
+            correct_option ?? 0 
+        ]
     );
     return result.insertId;
 };
