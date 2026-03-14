@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendEnquiryMessage = void 0;
-const email_1 = require("helpers/email");
+const email_1 = require("../helpers/email");
 const sendEnquiryMessage = async (req, res) => {
     try {
         const { email, fullname, message } = req.body;

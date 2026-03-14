@@ -1,5 +1,5 @@
 import express from "express";
-import { sendEnquiryEmail } from "helpers/email";
+import { sendEnquiryEmail } from "../helpers/email";
 
 export const sendEnquiryMessage = async (req: express.Request, res: express.Response) => {
     try {

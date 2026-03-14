@@ -11,7 +11,7 @@ const Exams_1 = require("../controllers/Exams");
 const Payments_1 = require("../controllers/Payments");
 const Admin_1 = require("../controllers/Admin");
 const auth_1 = require("../middlewares/auth");
-const Email_1 = require("controllers/Email");
+const Email_1 = require("../controllers/Email");
 const router = express_1.default.Router();
 const upload = (0, multer_1.default)({ storage: multer_1.default.memoryStorage() });
 exports.default = () => {
