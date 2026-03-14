@@ -5,7 +5,7 @@ import { login, signup, logout } from '../controllers/Auth';
 import { listCourses, getCourseDetails, getLessonDetails, completeLesson, getMyCourses, listCategories, getCourseLessons } from '../controllers/Courses';
 import { getCourseExam, submitExam, getUserExamHistory } from '../controllers/Exams';
 import { initializePayment, paystackWebhook } from '../controllers/Payments';
-import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminGradeSubmission, adminApproveSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion, adminDeleteCourse, adminDeleteLesson, adminGetStats, adminToggleUserStatus, adminCreateCategory, adminGetActivityLogs, adminListCourses, adminToggleCourseStatus, adminUpdateCourse, adminUpdateLesson, adminGetCourseLessons } from '../controllers/Admin';
+import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminGradeSubmission, adminApproveSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion, adminDeleteCourse, adminDeleteLesson, adminGetStats, adminToggleUserStatus, adminCreateCategory, adminGetActivityLogs, adminListCourses, adminToggleCourseStatus, adminUpdateCourse, adminUpdateLesson, adminGetCourseLessons, adminGetCourseExam } from '../controllers/Admin';
 import { isAuthenticated, isAdmin } from '../middlewares/auth';
 
 const router = express.Router();
@@ -60,10 +60,11 @@ export default (): express.Router => {
     router.post('/admin/submissions/:id/approve', isAuthenticated, isAdmin, adminApproveSubmission);
 
     // Exam CRUD
+    router.get('/admin/courses/:id/exam', isAuthenticated, isAdmin, adminGetCourseExam);
     router.post('/admin/courses/:id/exam', isAuthenticated, isAdmin, adminCreateExam);
     router.patch('/admin/exams/:id', isAuthenticated, isAdmin, adminUpdateExam);
     router.delete('/admin/exams/:id', isAuthenticated, isAdmin, adminDeleteExam);
-
+    
     // Question CRUD
     router.post('/admin/exams/:id/questions', isAuthenticated, isAdmin, adminAddQuestion);
     router.patch('/admin/questions/:id', isAuthenticated, isAdmin, adminUpdateQuestion);

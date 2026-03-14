@@ -54,6 +54,7 @@ exports.default = () => {
     router.patch('/admin/submissions/:id/grade', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGradeSubmission);
     router.post('/admin/submissions/:id/approve', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminApproveSubmission);
     // Exam CRUD
+    router.get('/admin/courses/:id/exam', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetCourseExam);
     router.post('/admin/courses/:id/exam', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminCreateExam);
     router.patch('/admin/exams/:id', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminUpdateExam);
     router.delete('/admin/exams/:id', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminDeleteExam);
