@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendCertificateEmail = void 0;
+exports.sendEnquiryEmail = exports.sendCertificateEmail = void 0;
 const resend_1 = require("resend");
 const resend = new resend_1.Resend(process.env.RESEND_API_KEY);
 const sendCertificateEmail = async (email, certificateUuid) => {
     try {
         const { data, error } = await resend.emails.send({
-            from: 'EdTech Platform <onboarding@resend.dev>',
+            from: 'CityCruise International <onboarding@resend.dev>',
             to: [email],
             subject: 'Congratulations! Your Certificate is Ready',
             html: `
@@ -28,4 +28,28 @@ const sendCertificateEmail = async (email, certificateUuid) => {
     }
 };
 exports.sendCertificateEmail = sendCertificateEmail;
+const sendEnquiryEmail = async (email, fullname, message) => {
+    try {
+        const { data, error } = await resend.emails.send({
+            from: 'CityCruise International <onboarding@resend.dev>',
+            to: [email],
+            subject: `Enquiry Form Entry`,
+            html: `
+                <h1>Enquiry from <strong>${fullname}</strong>!</h1>
+                <p>Email: <strong>${email}</strong></p>
+                <p>${message}</p>
+            `,
+        });
+        if (error) {
+            console.error('Error sending email:', error);
+            return { success: false, error };
+        }
+        return { success: true, data };
+    }
+    catch (error) {
+        console.error('Exception sending email:', error);
+        return { success: false, error };
+    }
+};
+exports.sendEnquiryEmail = sendEnquiryEmail;
 //# sourceMappingURL=email.js.map

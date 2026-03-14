@@ -2,7 +2,6 @@ import express from "express";
 import pool from "../db";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { getUsers, setUserStatus, getUserStats } from "../models/Users";
-import { uploadVideoToBunny } from "../helpers/bunny";
 import { createCertificate, createExam, updateExam, deleteExam, addQuestion, updateQuestion, deleteQuestion, getExamByCourseId, getQuestionsByExamId } from "../models/Exams";
 import { deleteCourse, deleteLesson, setCourseStatus, getAllCourses, updateCourse, updateLesson, getLessonsByCourseId } from "../models/Courses";
 import { createCategory } from "../models/Categories";

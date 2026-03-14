@@ -7,12 +7,15 @@ import { getCourseExam, submitExam, getUserExamHistory } from '../controllers/Ex
 import { initializePayment, paystackWebhook } from '../controllers/Payments';
 import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminGradeSubmission, adminApproveSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion, adminDeleteCourse, adminDeleteLesson, adminGetStats, adminToggleUserStatus, adminCreateCategory, adminGetActivityLogs, adminListCourses, adminToggleCourseStatus, adminUpdateCourse, adminUpdateLesson, adminGetCourseLessons, adminGetCourseExam } from '../controllers/Admin';
 import { isAuthenticated, isAdmin } from '../middlewares/auth';
+import { sendEnquiryMessage } from 'controllers/Email';
 
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
 
 export default (): express.Router => {
+    router.post('/send-enquiry', sendEnquiryMessage);
+
     // Auth
     router.post('/auth/register', signup);
     router.post('/auth/login', login);
