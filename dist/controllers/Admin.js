@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminGetCourseLessons = exports.adminUpdateLesson = exports.adminUpdateCourse = exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminApproveSubmission = exports.adminGradeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminCreateCourse = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
+exports.adminGetCourseLessons = exports.adminUpdateLesson = exports.adminUpdateCourse = exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminGetCourseExam = exports.adminApproveSubmission = exports.adminGradeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminCreateCourse = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
 const db_1 = __importDefault(require("../db"));
 const Users_1 = require("../models/Users");
 const Exams_1 = require("../models/Exams");
@@ -221,6 +221,22 @@ const adminApproveSubmission = async (req, res) => {
 };
 exports.adminApproveSubmission = adminApproveSubmission;
 // Exam CRUD
+const adminGetCourseExam = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const exam = await (0, Exams_1.getExamByCourseId)(Number(id));
+        if (!exam) {
+            return res.status(404).json({ success: false, data: null, message: "Exam not found for this course" });
+        }
+        const questions = await (0, Exams_1.getQuestionsByExamId)(exam.id);
+        return res.status(200).json({ success: true, data: { exam, questions: questions }, message: "Exam fetched" });
+    }
+    catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, data: null, message: "Internal server error" });
+    }
+};
+exports.adminGetCourseExam = adminGetCourseExam;
 const adminCreateExam = async (req, res) => {
     try {
         const { id } = req.params; // courseId

@@ -3,13 +3,14 @@ import pool from "../db";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
 import { getUsers, setUserStatus, getUserStats } from "../models/Users";
 import { uploadVideoToBunny } from "../helpers/bunny";
-import { createCertificate, createExam, updateExam, deleteExam, addQuestion, updateQuestion, deleteQuestion } from "../models/Exams";
+import { createCertificate, createExam, updateExam, deleteExam, addQuestion, updateQuestion, deleteQuestion, getExamByCourseId, getQuestionsByExamId } from "../models/Exams";
 import { deleteCourse, deleteLesson, setCourseStatus, getAllCourses, updateCourse, updateLesson, getLessonsByCourseId } from "../models/Courses";
 import { createCategory } from "../models/Categories";
 import { getLogs } from "../models/ActivityLogs";
 import { sendCertificateEmail } from "../helpers/email";
 import fs from 'fs';
 import path from 'path';
+import { AuthRequest } from "middlewares/auth";
 
 export const adminGetUsers = async (req: express.Request, res: express.Response) => {
     try {
@@ -258,6 +259,22 @@ export const adminApproveSubmission = async (req: express.Request, res: express.
 };
 
 // Exam CRUD
+export const adminGetCourseExam = async (req: AuthRequest, res: express.Response) => {
+    try {
+        const { id } = req.params;
+        const exam = await getExamByCourseId(Number(id));
+        if (!exam) {
+            return res.status(404).json({ success: false, data: null, message: "Exam not found for this course" });
+        }
+        const questions = await getQuestionsByExamId(exam.id);
+
+        return res.status(200).json({ success: true, data: { exam, questions: questions }, message: "Exam fetched" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, data: null, message: "Internal server error" });
+    }
+};
+
 export const adminCreateExam = async (req: express.Request, res: express.Response) => {
     try {
         const { id } = req.params; // courseId
