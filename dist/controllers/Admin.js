@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminGetCourseLessons = exports.adminUpdateLesson = exports.adminUpdateCourse = exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminGetCourseExam = exports.adminApproveSubmission = exports.adminGradeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminCreateCourse = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
+exports.adminGetCourseLessons = exports.adminUpdateLesson = exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminGetCourseExam = exports.adminApproveSubmission = exports.adminGradeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminUpdateCourse = exports.adminCreateCourse = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
 const db_1 = __importDefault(require("../db"));
 const Users_1 = require("../models/Users");
 const Exams_1 = require("../models/Exams");
@@ -43,9 +43,8 @@ const adminCreateCourse = async (req, res) => {
         const { title, description, price } = req.body;
         let coverImagePath = null;
         if (req.file) {
-            const fileName = `${Date.now()}-${req.file.originalname}`;
-            const uploadsDir = path_1.default.join(__dirname, '../../uploads');
-            // Ensure directory exists
+            const fileName = `${Date.now()}-${req.file.originalname.replace(/\s/g, '_')}`;
+            const uploadsDir = path_1.default.resolve(process.cwd(), 'uploads');
             if (!fs_1.default.existsSync(uploadsDir)) {
                 fs_1.default.mkdirSync(uploadsDir, { recursive: true });
             }
@@ -54,14 +53,53 @@ const adminCreateCourse = async (req, res) => {
             coverImagePath = `/uploads/${fileName}`;
         }
         const [result] = await db_1.default.execute('INSERT INTO courses (title, description, price, cover_image) VALUES (?, ?, ?, ?)', [title, description, price, coverImagePath]);
-        return res.status(201).json({ success: true, data: { id: result.insertId, coverImage: coverImagePath }, message: "Course created" });
+        return res.status(201).json({
+            success: true,
+            data: { id: result.insertId, coverImage: coverImagePath }
+        });
+    }
+    catch (err) {
+        console.error("Upload Error:", err);
+        return res.status(500).json({ success: false, message: `Upload failed: ${err}` });
+    }
+};
+exports.adminCreateCourse = adminCreateCourse;
+const adminUpdateCourse = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updateData = { ...req.body };
+        const [rows] = await db_1.default.execute('SELECT cover_image FROM courses WHERE id = ?', [id]);
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: "Course not found" });
+        }
+        const oldImagePath = rows[0].cover_image;
+        let newCoverImagePath = oldImagePath;
+        if (req.file) {
+            const fileName = `${Date.now()}-${req.file.originalname.replace(/\s/g, '_')}`;
+            const uploadsDir = path_1.default.resolve(process.cwd(), 'uploads');
+            if (!fs_1.default.existsSync(uploadsDir)) {
+                fs_1.default.mkdirSync(uploadsDir, { recursive: true });
+            }
+            const uploadPath = path_1.default.join(uploadsDir, fileName);
+            fs_1.default.writeFileSync(uploadPath, req.file.buffer);
+            newCoverImagePath = `/uploads/${fileName}`;
+            updateData.cover_image = newCoverImagePath;
+            if (oldImagePath) {
+                const oldFileFullPath = path_1.default.join(process.cwd(), oldImagePath);
+                if (fs_1.default.existsSync(oldFileFullPath)) {
+                    fs_1.default.unlinkSync(oldFileFullPath);
+                }
+            }
+        }
+        await (0, Courses_1.updateCourse)(Number(id), updateData);
+        return res.status(200).json({ success: true, message: "Course updated successfully" });
     }
     catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
-exports.adminCreateCourse = adminCreateCourse;
+exports.adminUpdateCourse = adminUpdateCourse;
 const adminCreateLesson = async (req, res) => {
     try {
         const { id } = req.params; // courseId
@@ -339,22 +377,6 @@ const adminToggleCourseStatus = async (req, res) => {
     }
 };
 exports.adminToggleCourseStatus = adminToggleCourseStatus;
-const adminUpdateCourse = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updateData = { ...req.body };
-        if (req.file) {
-            updateData.cover_image = `/uploads/${req.file.filename}`;
-        }
-        await (0, Courses_1.updateCourse)(Number(id), updateData);
-        return res.status(200).json({ success: true, message: "Course updated successfully" });
-    }
-    catch (err) {
-        console.error(err);
-        return res.status(500).json({ success: false, message: "Internal server error" });
-    }
-};
-exports.adminUpdateCourse = adminUpdateCourse;
 const adminUpdateLesson = async (req, res) => {
     try {
         const { id } = req.params;

@@ -15,8 +15,8 @@ export const adminGetUsers = async (req: express.Request, res: express.Response)
     try {
         const { q, limit, offset } = req.query;
         const users = await getUsers(
-            q as string, 
-            limit ? Number(limit) : 20, 
+            q as string,
+            limit ? Number(limit) : 20,
             offset ? Number(offset) : 0
         );
         return res.status(200).json({ success: true, data: users, message: "Users fetched" });
@@ -44,16 +44,17 @@ export const adminCreateCourse = async (req: express.Request, res: express.Respo
         let coverImagePath = null;
 
         if (req.file) {
-            const fileName = `${Date.now()}-${req.file.originalname}`;
-            const uploadsDir = path.join(__dirname, '../../uploads');
+            const fileName = `${Date.now()}-${req.file.originalname.replace(/\s/g, '_')}`;
 
-            // Ensure directory exists
+            const uploadsDir = path.resolve(process.cwd(), 'uploads');
+
             if (!fs.existsSync(uploadsDir)) {
                 fs.mkdirSync(uploadsDir, { recursive: true });
             }
 
             const uploadPath = path.join(uploadsDir, fileName);
             fs.writeFileSync(uploadPath, req.file.buffer);
+
             coverImagePath = `/uploads/${fileName}`;
         }
 
@@ -61,23 +62,74 @@ export const adminCreateCourse = async (req: express.Request, res: express.Respo
             'INSERT INTO courses (title, description, price, cover_image) VALUES (?, ?, ?, ?)',
             [title, description, price, coverImagePath]
         );
-        return res.status(201).json({ success: true, data: { id: result.insertId, coverImage: coverImagePath }, message: "Course created" });
+
+        return res.status(201).json({
+            success: true,
+            data: { id: result.insertId, coverImage: coverImagePath }
+        });
+    } catch (err) {
+        console.error("Upload Error:", err);
+        return res.status(500).json({ success: false, message: `Upload failed: ${err}` });
+    }
+};
+
+export const adminUpdateCourse = async (req: express.Request, res: express.Response) => {
+    try {
+        const { id } = req.params;
+        const updateData: any = { ...req.body };
+
+        const [rows] = await pool.execute<RowDataPacket[]>(
+            'SELECT cover_image FROM courses WHERE id = ?',
+            [id]
+        );
+
+        if (rows.length === 0) {
+            return res.status(404).json({ success: false, message: "Course not found" });
+        }
+
+        const oldImagePath = rows[0].cover_image;
+        let newCoverImagePath = oldImagePath;
+
+        if (req.file) {
+            const fileName = `${Date.now()}-${req.file.originalname.replace(/\s/g, '_')}`;
+            const uploadsDir = path.resolve(process.cwd(), 'uploads');
+
+            if (!fs.existsSync(uploadsDir)) {
+                fs.mkdirSync(uploadsDir, { recursive: true });
+            }
+
+            const uploadPath = path.join(uploadsDir, fileName);
+            fs.writeFileSync(uploadPath, req.file.buffer);
+            newCoverImagePath = `/uploads/${fileName}`;
+            updateData.cover_image = newCoverImagePath;
+
+            if (oldImagePath) {
+                const oldFileFullPath = path.join(process.cwd(), oldImagePath);
+                if (fs.existsSync(oldFileFullPath)) {
+                    fs.unlinkSync(oldFileFullPath);
+                }
+            }
+        }
+
+        await updateCourse(Number(id), updateData);
+        return res.status(200).json({ success: true, message: "Course updated successfully" });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
 
+
 export const adminCreateLesson = async (req: express.Request, res: express.Response) => {
     try {
         const { id } = req.params; // courseId
-        const { 
-            title, 
-            content, 
-            orderIndex, 
-            videoLink, 
-            videoId, 
-            libraryId 
+        const {
+            title,
+            content,
+            orderIndex,
+            videoLink,
+            videoId,
+            libraryId
         } = req.body;
 
         console.log("Creating Lesson with data:", { id, title, videoLink, videoId });
@@ -93,25 +145,25 @@ export const adminCreateLesson = async (req: express.Request, res: express.Respo
                 videoId ?? null,
                 videoLink ?? null,
                 libraryId ?? null,
-                orderIndex ?? 0 
+                orderIndex ?? 0
             ]
         );
 
-        return res.status(201).json({ 
-            success: true, 
-            data: { 
-                id: result.insertId, 
-                videoId, 
-                videoLink, 
-                libraryId 
-            }, 
-            message: "Lesson created successfully" 
+        return res.status(201).json({
+            success: true,
+            data: {
+                id: result.insertId,
+                videoId,
+                videoLink,
+                libraryId
+            },
+            message: "Lesson created successfully"
         });
     } catch (err) {
         console.error("Database Error in adminCreateLesson:", err);
-        return res.status(500).json({ 
-            success: false, 
-            message: "Internal server error" 
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error"
         });
     }
 };
@@ -365,23 +417,6 @@ export const adminToggleCourseStatus = async (req: express.Request, res: express
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, message: `Internal server error ${err}` });
-    }
-};
-
-export const adminUpdateCourse = async (req: express.Request, res: express.Response) => {
-    try {
-        const { id } = req.params;
-        const updateData: any = { ...req.body };
-
-        if (req.file) {
-            updateData.cover_image = `/uploads/${req.file.filename}`;
-        }
-
-        await updateCourse(Number(id), updateData);
-        return res.status(200).json({ success: true, message: "Course updated successfully" });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
 

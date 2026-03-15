@@ -32,8 +32,8 @@ app.use(compression());
 app.use(cookieParser());
 app.use(express.json());
 
-// Ensure static path is safe
-app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+// Maps the /uploads URL to the physical /uploads folder
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 if (swaggerDocument) {
     app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));

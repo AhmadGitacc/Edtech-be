@@ -1,5 +1,4 @@
 import express from 'express';
-import multer from 'multer';
 
 import { login, signup, logout } from '../controllers/Auth';
 import { listCourses, getCourseDetails, getLessonDetails, completeLesson, getMyCourses, listCategories, getCourseLessons } from '../controllers/Courses';
@@ -8,9 +7,9 @@ import { initializePayment, paystackWebhook } from '../controllers/Payments';
 import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminGradeSubmission, adminApproveSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion, adminDeleteCourse, adminDeleteLesson, adminGetStats, adminToggleUserStatus, adminCreateCategory, adminGetActivityLogs, adminListCourses, adminToggleCourseStatus, adminUpdateCourse, adminUpdateLesson, adminGetCourseLessons, adminGetCourseExam } from '../controllers/Admin';
 import { isAuthenticated, isAdmin } from '../middlewares/auth';
 import { sendEnquiryMessage } from '../controllers/Email';
+import { upload } from '../middlewares/multer';
 
 const router = express.Router();
-const upload = multer({ storage: multer.memoryStorage() });
 
 
 export default (): express.Router => {
@@ -44,8 +43,8 @@ export default (): express.Router => {
     // Admin
     router.get('/admin/users', isAuthenticated, isAdmin, adminGetUsers);
     router.patch('/admin/users/:id/status', isAuthenticated, isAdmin, adminToggleUserStatus);
-    router.post('/admin/courses', isAuthenticated, isAdmin, upload.single('coverImage'), adminCreateCourse);
-    router.patch('/admin/courses/:id', isAuthenticated, isAdmin, upload.single('coverImage'), adminUpdateCourse);
+    router.post('/admin/courses', isAuthenticated, isAdmin, upload.single('cover_image'), adminCreateCourse);
+    router.patch('/admin/courses/:id', isAuthenticated, isAdmin, upload.single('cover_image'), adminUpdateCourse);
     router.get('/admin/courses', isAuthenticated, isAdmin, adminListCourses);
     router.get('/admin/courses/:id/lessons', isAuthenticated, isAdmin, adminGetCourseLessons);
     router.delete('/admin/courses/:id', isAuthenticated, isAdmin, adminDeleteCourse);

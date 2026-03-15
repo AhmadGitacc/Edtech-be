@@ -4,7 +4,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
-const multer_1 = __importDefault(require("multer"));
 const Auth_1 = require("../controllers/Auth");
 const Courses_1 = require("../controllers/Courses");
 const Exams_1 = require("../controllers/Exams");
@@ -12,8 +11,8 @@ const Payments_1 = require("../controllers/Payments");
 const Admin_1 = require("../controllers/Admin");
 const auth_1 = require("../middlewares/auth");
 const Email_1 = require("../controllers/Email");
+const multer_1 = require("../middlewares/multer");
 const router = express_1.default.Router();
-const upload = (0, multer_1.default)({ storage: multer_1.default.memoryStorage() });
 exports.default = () => {
     router.post('/send-enquiry', Email_1.sendEnquiryMessage);
     // Auth
@@ -39,14 +38,14 @@ exports.default = () => {
     // Admin
     router.get('/admin/users', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetUsers);
     router.patch('/admin/users/:id/status', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminToggleUserStatus);
-    router.post('/admin/courses', auth_1.isAuthenticated, auth_1.isAdmin, upload.single('coverImage'), Admin_1.adminCreateCourse);
-    router.patch('/admin/courses/:id', auth_1.isAuthenticated, auth_1.isAdmin, upload.single('coverImage'), Admin_1.adminUpdateCourse);
+    router.post('/admin/courses', auth_1.isAuthenticated, auth_1.isAdmin, multer_1.upload.single('cover_image'), Admin_1.adminCreateCourse);
+    router.patch('/admin/courses/:id', auth_1.isAuthenticated, auth_1.isAdmin, multer_1.upload.single('cover_image'), Admin_1.adminUpdateCourse);
     router.get('/admin/courses', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminListCourses);
     router.get('/admin/courses/:id/lessons', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetCourseLessons);
     router.delete('/admin/courses/:id', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminDeleteCourse);
     router.patch('/admin/courses/:id/status', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminToggleCourseStatus);
-    router.post('/admin/courses/:id/lessons', auth_1.isAuthenticated, auth_1.isAdmin, upload.none(), Admin_1.adminCreateLesson);
-    router.patch('/admin/lessons/:id', auth_1.isAuthenticated, auth_1.isAdmin, upload.none(), Admin_1.adminUpdateLesson);
+    router.post('/admin/courses/:id/lessons', auth_1.isAuthenticated, auth_1.isAdmin, multer_1.upload.none(), Admin_1.adminCreateLesson);
+    router.patch('/admin/lessons/:id', auth_1.isAuthenticated, auth_1.isAdmin, multer_1.upload.none(), Admin_1.adminUpdateLesson);
     router.delete('/admin/lessons/:id', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminDeleteLesson);
     router.get('/admin/stats', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetStats);
     router.post('/admin/categories', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminCreateCategory);
