@@ -32,8 +32,9 @@ export const sendEnquiryEmail = async (email: string, fullname: string, message:
     try {
         const { data, error } = await resend.emails.send({
             from: 'CityCruise International <onboarding@resend.dev>',
-            to: "citycruiseinternational@gmail.com",
+            to: "citycruiseinternational.com",
             subject: `Enquiry Form Entry`,
+            replyTo: email,
             html: `
                 <h1>Enquiry from <strong>${fullname}</strong>!</h1>
                 <p>Email: <strong>${email}</strong></p>
