@@ -32,7 +32,7 @@ const sendEnquiryEmail = async (email, fullname, message) => {
     try {
         const { data, error } = await resend.emails.send({
             from: 'CityCruise International <onboarding@resend.dev>',
-            to: [email],
+            to: "citycruiseinternational@gmail.com",
             subject: `Enquiry Form Entry`,
             html: `
                 <h1>Enquiry from <strong>${fullname}</strong>!</h1>
