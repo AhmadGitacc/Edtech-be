@@ -33,7 +33,7 @@ export const getEnrollmentByReference = async (reference: string): Promise<Enrol
 
 export const getEnrollmentsByUserId = async (userId: number): Promise<RowDataPacket[]> => {
     const [rows] = await pool.execute<RowDataPacket[]>(
-        `SELECT c.id, c.title, c.description, c.price, e.payment_reference, e.created_at 
+        `SELECT c.id, c.title, c.description, c.price,c.cover_image, e.payment_reference, e.created_at 
          FROM enrollments e 
          JOIN courses c ON e.course_id = c.id 
          WHERE e.user_id = ? AND e.status = 'success'`,

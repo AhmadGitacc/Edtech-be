@@ -19,7 +19,7 @@ const getEnrollmentByReference = async (reference) => {
 };
 exports.getEnrollmentByReference = getEnrollmentByReference;
 const getEnrollmentsByUserId = async (userId) => {
-    const [rows] = await db_1.default.execute(`SELECT c.id, c.title, c.description, c.price, e.payment_reference, e.created_at 
+    const [rows] = await db_1.default.execute(`SELECT c.id, c.title, c.description, c.price,c.cover_image, e.payment_reference, e.created_at 
          FROM enrollments e 
          JOIN courses c ON e.course_id = c.id 
          WHERE e.user_id = ? AND e.status = 'success'`, [userId]);
