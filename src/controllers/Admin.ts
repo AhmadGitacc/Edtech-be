@@ -40,7 +40,7 @@ export const adminToggleUserStatus = async (req: express.Request, res: express.R
 
 export const adminCreateCourse = async (req: express.Request, res: express.Response) => {
     try {
-        const { title, description, price } = req.body;
+        const { title, description, price, video_link } = req.body;
         let coverImagePath = null;
 
         if (req.file) {
@@ -59,8 +59,8 @@ export const adminCreateCourse = async (req: express.Request, res: express.Respo
         }
 
         const [result] = await pool.execute<ResultSetHeader>(
-            'INSERT INTO courses (title, description, price, cover_image) VALUES (?, ?, ?, ?)',
-            [title, description, price, coverImagePath]
+            'INSERT INTO courses (title, description, price, video_link, cover_image) VALUES (?, ?, ?, ?, ?)',
+            [title, description, price, video_link, coverImagePath]
         );
 
         return res.status(201).json({

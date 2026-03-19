@@ -40,7 +40,7 @@ const adminToggleUserStatus = async (req, res) => {
 exports.adminToggleUserStatus = adminToggleUserStatus;
 const adminCreateCourse = async (req, res) => {
     try {
-        const { title, description, price } = req.body;
+        const { title, description, price, video_link } = req.body;
         let coverImagePath = null;
         if (req.file) {
             const fileName = `${Date.now()}-${req.file.originalname.replace(/\s/g, '_')}`;
@@ -52,7 +52,7 @@ const adminCreateCourse = async (req, res) => {
             fs_1.default.writeFileSync(uploadPath, req.file.buffer);
             coverImagePath = `/uploads/${fileName}`;
         }
-        const [result] = await db_1.default.execute('INSERT INTO courses (title, description, price, cover_image) VALUES (?, ?, ?, ?)', [title, description, price, coverImagePath]);
+        const [result] = await db_1.default.execute('INSERT INTO courses (title, description, price, video_link, cover_image) VALUES (?, ?, ?, ?, ?)', [title, description, price, video_link, coverImagePath]);
         return res.status(201).json({
             success: true,
             data: { id: result.insertId, coverImage: coverImagePath }
