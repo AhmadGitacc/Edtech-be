@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { createUser, getUserByEmail, setUserStatus } from "../models/Users";
 import { createLog } from "../models/ActivityLogs";
 import jwt from "jsonwebtoken";
+import { authentication, random } from "helpers";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -16,13 +17,13 @@ export const login = async (req: express.Request, res: express.Response) => {
 
         const user = await getUserByEmail(email);
 
-        if (!user) {
+       if (!user || !user.salt) {
             return res.status(401).json({ success: false, data: null, message: "Invalid credentials" });
         }
 
-        const isMatch = await bcrypt.compare(password, user.password!);
+        const expectedHash = authentication(user.salt, password);
 
-        if (!isMatch) {
+        if (user.password !== expectedHash) {
             return res.status(401).json({ success: false, data: null, message: "Invalid credentials" });
         }
 
@@ -32,7 +33,6 @@ export const login = async (req: express.Request, res: express.Response) => {
             { expiresIn: '24h' }
         );
 
-        // Update status and log activity
         await setUserStatus(user.id, true);
         await createLog(user.id, user.username, 'LOGIN', `User logged in from ${req.ip}`);
 
@@ -42,7 +42,6 @@ export const login = async (req: express.Request, res: express.Response) => {
             maxAge: 24 * 60 * 60 * 1000 // 24 hours
         });
 
-        // Remove password from response
         const { password: _, ...userWithoutPassword } = user;
 
         return res.status(200).json({
@@ -70,8 +69,8 @@ export const signup = async (req: express.Request, res: express.Response) => {
             return res.status(400).json({ success: false, data: null, message: "User already exists" });
         }
 
-        const salt = await bcrypt.genSalt(10);
-        const passwordHash = await bcrypt.hash(password, salt);
+        const salt = random();
+        const passwordHash = authentication(salt, password);
 
         const userId = await createUser(username, email, passwordHash);
 

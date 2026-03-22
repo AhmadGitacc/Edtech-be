@@ -4,10 +4,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.logout = exports.signup = exports.login = void 0;
-const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const Users_1 = require("../models/Users");
 const ActivityLogs_1 = require("../models/ActivityLogs");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
+const helpers_1 = require("helpers");
 const JWT_SECRET = process.env.JWT_SECRET;
 const login = async (req, res) => {
     try {
@@ -16,15 +16,14 @@ const login = async (req, res) => {
             return res.status(400).json({ success: false, data: null, message: "Email and password are required" });
         }
         const user = await (0, Users_1.getUserByEmail)(email);
-        if (!user) {
+        if (!user || !user.salt) {
             return res.status(401).json({ success: false, data: null, message: "Invalid credentials" });
         }
-        const isMatch = await bcryptjs_1.default.compare(password, user.password);
-        if (!isMatch) {
+        const expectedHash = (0, helpers_1.authentication)(user.salt, password);
+        if (user.password !== expectedHash) {
             return res.status(401).json({ success: false, data: null, message: "Invalid credentials" });
         }
         const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
-        // Update status and log activity
         await (0, Users_1.setUserStatus)(user.id, true);
         await (0, ActivityLogs_1.createLog)(user.id, user.username, 'LOGIN', `User logged in from ${req.ip}`);
         res.cookie('auth_token', token, {
@@ -32,7 +31,6 @@ const login = async (req, res) => {
             secure: process.env.NODE_ENV === 'production',
             maxAge: 24 * 60 * 60 * 1000 // 24 hours
         });
-        // Remove password from response
         const { password: _, ...userWithoutPassword } = user;
         return res.status(200).json({
             success: true,
@@ -56,8 +54,8 @@ const signup = async (req, res) => {
         if (existingUser) {
             return res.status(400).json({ success: false, data: null, message: "User already exists" });
         }
-        const salt = await bcryptjs_1.default.genSalt(10);
-        const passwordHash = await bcryptjs_1.default.hash(password, salt);
+        const salt = (0, helpers_1.random)();
+        const passwordHash = (0, helpers_1.authentication)(salt, password);
         const userId = await (0, Users_1.createUser)(username, email, passwordHash);
         return res.status(201).json({
             success: true,
