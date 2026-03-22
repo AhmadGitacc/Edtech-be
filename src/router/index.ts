@@ -8,6 +8,7 @@ import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExa
 import { isAuthenticated, isAdmin } from '../middlewares/auth';
 import { sendEnquiryMessage } from '../controllers/Email';
 import { upload } from '../middlewares/multer';
+import { updateUser } from '../controllers/Users';
 
 const router = express.Router();
 
@@ -19,6 +20,7 @@ export default (): express.Router => {
     router.post('/auth/register', signup);
     router.post('/auth/login', login);
     router.post('/auth/logout', isAuthenticated, logout);
+    router.post('/auth/update', isAuthenticated, updateUser);
 
     // Categories
     router.get('/categories', listCategories);

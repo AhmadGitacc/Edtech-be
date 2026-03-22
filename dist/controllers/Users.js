@@ -28,11 +28,13 @@ const deleteUser = async (req, res) => {
 exports.deleteUser = deleteUser;
 const updateUser = async (req, res) => {
     try {
-        const { id } = req.params;
+        const userId = req.user?.id;
+        if (!userId)
+            return res.status(401).json({ message: "Unauthorized" });
         const { email, username, password } = req.body;
-        const user = await (0, Users_1.getUserById)(Number(id));
+        const user = await (0, Users_1.getUserById)(Number(userId));
         if (!user) {
-            return res.status(400).json("user doesn't exist");
+            return res.status(404).json({ message: "User doesn't exist" });
         }
         const updateValues = {};
         if (email)
@@ -44,14 +46,24 @@ const updateUser = async (req, res) => {
             updateValues.salt = salt;
             updateValues.password = (0, helpers_1.authentication)(salt, password);
         }
-        if (Object.keys(updateValues).length > 0) {
-            await (0, Users_1.updateUserById)(Number(id), updateValues);
+        if (Object.keys(updateValues).length === 0) {
+            return res.status(400).json({ message: "No changes detected" });
         }
-        return res.status(200).json({ ...user, ...updateValues });
+        await (0, Users_1.updateUserById)(Number(userId), updateValues);
+        const safeResponse = {
+            id: userId,
+            email: email || user.email,
+            username: username || user.username,
+        };
+        return res.status(200).json({
+            success: true,
+            data: safeResponse,
+            message: "Profile updated successfully"
+        });
     }
     catch (err) {
-        console.log(err);
-        return res.sendStatus(400);
+        console.error("Update User Error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
 exports.updateUser = updateUser;

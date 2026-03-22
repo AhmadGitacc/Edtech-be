@@ -29,32 +29,45 @@ export const deleteUser = async (req: express.Request, res: express.Response) =>
 
 export const updateUser = async (req: express.Request, res: express.Response) => {
     try {
-        const { id } = req.params
-        const { email, username, password } = req.body
+        const userId = (req as any).user?.id;
+        if (!userId) return res.status(401).json({ message: "Unauthorized" });
 
-        const user = await getUserById(Number(id))
+        const { email, username, password } = req.body;
 
+        const user = await getUserById(Number(userId));
         if (!user) {
-            return res.status(400).json("user doesn't exist")
+            return res.status(404).json({ message: "User doesn't exist" });
         }
 
-        const updateValues: any = {}
-        if (email) updateValues.email = email
-        if (username) updateValues.username = username
+        const updateValues: any = {};
+        if (email) updateValues.email = email;
+        if (username) updateValues.username = username;
         if (password) {
             const salt = random();
             updateValues.salt = salt;
             updateValues.password = authentication(salt, password);
         }
 
-        if (Object.keys(updateValues).length > 0) {
-            await updateUserById(Number(id), updateValues)
+        if (Object.keys(updateValues).length === 0) {
+            return res.status(400).json({ message: "No changes detected" });
         }
 
-        return res.status(200).json({ ...user, ...updateValues })
+        await updateUserById(Number(userId), updateValues);
+
+        const safeResponse = {
+            id: userId,
+            email: email || user.email,
+            username: username || user.username,
+        };
+
+        return res.status(200).json({ 
+            success: true, 
+            data: safeResponse, 
+            message: "Profile updated successfully" 
+        });
 
     } catch (err) {
-        console.log(err)
-        return res.sendStatus(400)
+        console.error("Update User Error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
     }
 }

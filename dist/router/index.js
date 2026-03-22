@@ -12,6 +12,7 @@ const Admin_1 = require("../controllers/Admin");
 const auth_1 = require("../middlewares/auth");
 const Email_1 = require("../controllers/Email");
 const multer_1 = require("../middlewares/multer");
+const Users_1 = require("../controllers/Users");
 const router = express_1.default.Router();
 exports.default = () => {
     router.post('/send-enquiry', Email_1.sendEnquiryMessage);
@@ -19,6 +20,7 @@ exports.default = () => {
     router.post('/auth/register', Auth_1.signup);
     router.post('/auth/login', Auth_1.login);
     router.post('/auth/logout', auth_1.isAuthenticated, Auth_1.logout);
+    router.post('/auth/update', auth_1.isAuthenticated, Users_1.updateUser);
     // Categories
     router.get('/categories', Courses_1.listCategories);
     // Courses & Lessons
