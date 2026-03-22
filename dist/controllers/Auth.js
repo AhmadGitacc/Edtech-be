@@ -7,7 +7,7 @@ exports.logout = exports.signup = exports.login = void 0;
 const Users_1 = require("../models/Users");
 const ActivityLogs_1 = require("../models/ActivityLogs");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const helpers_1 = require("helpers");
+const helpers_1 = require("../helpers");
 const JWT_SECRET = process.env.JWT_SECRET;
 const login = async (req, res) => {
     try {

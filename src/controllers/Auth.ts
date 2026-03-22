@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import { createUser, getUserByEmail, setUserStatus } from "../models/Users";
 import { createLog } from "../models/ActivityLogs";
 import jwt from "jsonwebtoken";
-import { authentication, random } from "helpers";
+import { authentication, random } from "../helpers";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
