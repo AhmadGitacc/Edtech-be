@@ -25,6 +25,7 @@ exports.default = () => {
     router.get('/courses', Courses_1.listCourses);
     router.get('/courses/:id', Courses_1.getCourseDetails);
     router.get('/courses/:id/lessons', Courses_1.getCourseLessons);
+    router.get('/courses/:id/progress', auth_1.isAuthenticated, Courses_1.getProgress);
     router.get('/lessons/:id', auth_1.isAuthenticated, Courses_1.getLessonDetails);
     router.post('/lessons/:id/complete', auth_1.isAuthenticated, Courses_1.completeLesson);
     router.get('/my-courses', auth_1.isAuthenticated, Courses_1.getMyCourses);

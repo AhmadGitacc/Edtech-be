@@ -1,8 +1,9 @@
 import express from "express";
-import { getAllCourses, getCourseById, getLessonsByCourseId, getLessonById, trackProgress, getProgress } from "../models/Courses";
+import { getAllCourses, getCourseById, getLessonsByCourseId, getLessonById, trackProgress, getProgress as getProgressModel } from "../models/Courses";
 import { getAllCategories } from "../models/Categories";
 import { getEnrollmentsByUserId } from "../models/Payments";
 import { AuthRequest } from "../middlewares/auth";
+import pool from "db";
 
 export const listCourses = async (req: express.Request, res: express.Response) => {
     try {
@@ -72,7 +73,7 @@ export const completeLesson = async (req: AuthRequest, res: express.Response) =>
         return res.status(200).json({ success: true, data: null, message: "Lesson marked as complete" });
     } catch (err) {
         console.error(err);
-        return res.status(500).json({ success: false, data: null, message: "Internal server error" });
+        return res.status(500).json({ success: false, data: null, message: err });
     }
 };
 
@@ -92,8 +93,52 @@ export const getMyCourses = async (req: AuthRequest, res: express.Response) => {
         const userId = req.user?.id;
         if (!userId) return res.sendStatus(401);
 
-        const enrollments = await getEnrollmentsByUserId(userId);
-        return res.status(200).json({ success: true, data: enrollments, message: "Enrolled courses fetched" });
+        const query = `
+            SELECT 
+                c.id, 
+                c.title, 
+                c.description, 
+                c.cover_image,
+                c.price,
+                c.category_tag,
+                e.STATUS as enrollment_status,
+                (SELECT COUNT(*) FROM lessons l WHERE l.course_id = c.id) as total_lessons,
+                (SELECT COUNT(*) 
+                 FROM user_progress up 
+                 JOIN lessons l ON up.lesson_id = l.id 
+                 WHERE l.course_id = c.id 
+                 AND up.user_id = ? 
+                 AND up.completed = true) as completed_lessons
+            FROM courses c
+            JOIN enrollments e ON e.course_id = c.id
+            WHERE e.user_id = ?;
+        `;
+
+        const [enrollments] = await pool.execute(query, [userId, userId]);
+
+        return res.status(200).json({
+            success: true,
+            data: enrollments,
+            message: "Enrolled courses with progress fetched"
+        });
+    } catch (err) {
+        console.error("Fetch Enrolled Error:", err);
+        return res.status(500).json({
+            success: false,
+            data: null,
+            message: "Internal server error"
+        });
+    }
+};
+
+export const getProgress = async (req: AuthRequest, res: express.Response) => {
+    try {
+        const { id } = req.params;
+        const userId = req.user?.id;
+        if (!userId) return res.sendStatus(401);
+
+        const progress = await getProgressModel(userId, Number(id));
+        return res.status(200).json({ success: true, data: progress, message: "Course progress fetched" });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, data: null, message: "Internal server error" });
