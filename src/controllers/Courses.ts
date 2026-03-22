@@ -3,7 +3,7 @@ import { getAllCourses, getCourseById, getLessonsByCourseId, getLessonById, trac
 import { getAllCategories } from "../models/Categories";
 import { getEnrollmentsByUserId } from "../models/Payments";
 import { AuthRequest } from "../middlewares/auth";
-import pool from "db";
+import pool from '../db';
 
 export const listCourses = async (req: express.Request, res: express.Response) => {
     try {

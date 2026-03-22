@@ -7,7 +7,7 @@ exports.getProgress = exports.getMyCourses = exports.getCourseLessons = exports.
 const Courses_1 = require("../models/Courses");
 const Categories_1 = require("../models/Categories");
 const Payments_1 = require("../models/Payments");
-const db_1 = __importDefault(require("db"));
+const db_1 = __importDefault(require("../db"));
 const listCourses = async (req, res) => {
     try {
         const courses = await (0, Courses_1.getAllCourses)(true); // Filter active
