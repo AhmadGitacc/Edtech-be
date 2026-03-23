@@ -87,16 +87,24 @@ export const signup = async (req: express.Request, res: express.Response) => {
 
 export const logout = async (req: express.Request, res: express.Response) => {
     try {
-        const user = (req as any).user;
-        if (user) {
-            await setUserStatus(user.id, false);
-            await createLog(user.id, user.username, 'LOGOUT', 'User logged out');
-        }
+       res.clearCookie('auth_token', {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            path: '/'      
+        });
 
-        res.clearCookie('auth_token');
-        return res.status(200).json({ success: true, message: "Logged out successfully" });
+        return res.status(200).json({ 
+            success: true, 
+            message: "Logged out successfully" 
+        });
+
     } catch (err) {
-        console.error(err);
-        return res.status(500).json({ success: false, message: "Internal server error" });
+        console.error("Critical Logout Failure:", err);
+        res.clearCookie('auth_token');
+        return res.status(200).json({ 
+            success: true, 
+            message: "Session cleared with errors" 
+        });
     }
 };
