@@ -17,11 +17,11 @@ const login = async (req, res) => {
         }
         const user = await (0, Users_1.getUserByEmail)(email);
         if (!user || !user.salt) {
-            return res.status(401).json({ success: false, data: null, message: "Invalid credentials" });
+            return res.status(401).json({ success: false, data: null, message: "Unauthorized Access" });
         }
         const expectedHash = (0, helpers_1.authentication)(user.salt, password);
         if (user.password !== expectedHash) {
-            return res.status(401).json({ success: false, data: null, message: "Invalid credentials" });
+            return res.status(401).json({ success: false, data: null, message: "Invalid Password" });
         }
         const token = jsonwebtoken_1.default.sign({ id: user.id, email: user.email, role: user.role }, JWT_SECRET, { expiresIn: '24h' });
         await (0, Users_1.setUserStatus)(user.id, true);
@@ -56,7 +56,7 @@ const signup = async (req, res) => {
         }
         const salt = (0, helpers_1.random)();
         const passwordHash = (0, helpers_1.authentication)(salt, password);
-        const userId = await (0, Users_1.createUser)(username, email, passwordHash);
+        const userId = await (0, Users_1.createUser)(username, email, passwordHash, salt);
         return res.status(201).json({
             success: true,
             data: { id: userId, username, email },

@@ -12,10 +12,10 @@ export interface User extends RowDataPacket {
     created_at: Date;
 }
 
-export const createUser = async (username: string, email: string, passwordHash: string): Promise<number> => {
+export const createUser = async (username: string, email: string, passwordHash: string, salt: string): Promise<number> => {
     const [result] = await pool.execute<ResultSetHeader>(
-        'INSERT INTO users (username, email, password) VALUES (?, ?, ?)',
-        [username, email, passwordHash]
+        'INSERT INTO users (username, email, password, salt) VALUES (?, ?, ?, ?)',
+        [username, email, passwordHash, salt]
     );
     return result.insertId;
 };
@@ -86,4 +86,4 @@ export const getUserStats = async (): Promise<any> => {
             studentGrowth: "+5%"
         }
     };
-};
+};

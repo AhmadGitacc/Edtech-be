@@ -5,8 +5,8 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserStats = exports.setUserStatus = exports.updateUserById = exports.deleteUserById = exports.getUsers = exports.getUserById = exports.getUserByEmail = exports.createUser = void 0;
 const db_1 = __importDefault(require("../db"));
-const createUser = async (username, email, passwordHash) => {
-    const [result] = await db_1.default.execute('INSERT INTO users (username, email, password) VALUES (?, ?, ?)', [username, email, passwordHash]);
+const createUser = async (username, email, passwordHash, salt) => {
+    const [result] = await db_1.default.execute('INSERT INTO users (username, email, password, salt) VALUES (?, ?, ?, ?)', [username, email, passwordHash, salt]);
     return result.insertId;
 };
 exports.createUser = createUser;

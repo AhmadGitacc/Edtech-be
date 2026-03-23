@@ -18,13 +18,13 @@ export const login = async (req: express.Request, res: express.Response) => {
         const user = await getUserByEmail(email);
 
        if (!user || !user.salt) {
-            return res.status(401).json({ success: false, data: null, message: "Invalid credentials" });
+            return res.status(401).json({ success: false, data: null, message: "Unauthorized Access" });
         }
 
         const expectedHash = authentication(user.salt, password);
 
         if (user.password !== expectedHash) {
-            return res.status(401).json({ success: false, data: null, message: "Invalid credentials" });
+            return res.status(401).json({ success: false, data: null, message: "Invalid Password" });
         }
 
         const token = jwt.sign(
@@ -72,7 +72,7 @@ export const signup = async (req: express.Request, res: express.Response) => {
         const salt = random();
         const passwordHash = authentication(salt, password);
 
-        const userId = await createUser(username, email, passwordHash);
+        const userId = await createUser(username, email, passwordHash, salt);
 
         return res.status(201).json({
             success: true,
