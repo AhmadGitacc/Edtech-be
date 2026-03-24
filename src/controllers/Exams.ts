@@ -44,21 +44,21 @@ export const submitExam = async (req: AuthRequest, res: express.Response) => {
         for (const q of questions) {
             const userAnswer = answers.find((a: any) => a.questionId === q.id);
             let score = 0;
-            let theoryAnswer = null;
-            let selectedOption = null;
+            let theory_answer = null;
+            let selected_option = null;
 
             if (q.type === 'objective') {
-                selectedOption = userAnswer?.selectedOption;
-                if (selectedOption === q.correct_option) {
+                selected_option = userAnswer?.selected_option;
+                if (selected_option === q.correct_option) {
                     score = 1;
                     objectiveScore++;
                 }
             } else if (q.type === 'theory') {
-                theoryAnswer = userAnswer?.theoryAnswer;
+                theory_answer = userAnswer?.theory_answer;
                 score = 0; // To be marked by admin
             }
 
-            await saveAnswer(submissionId, q.id, { selectedOption, theoryAnswer, score });
+            await saveAnswer(submissionId, q.id, { selected_option, theory_answer, score });
         }
 
         // 3. Update objective score in submission

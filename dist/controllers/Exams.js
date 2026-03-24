@@ -44,20 +44,20 @@ const submitExam = async (req, res) => {
         for (const q of questions) {
             const userAnswer = answers.find((a) => a.questionId === q.id);
             let score = 0;
-            let theoryAnswer = null;
-            let selectedOption = null;
+            let theory_answer = null;
+            let selected_option = null;
             if (q.type === 'objective') {
-                selectedOption = userAnswer?.selectedOption;
-                if (selectedOption === q.correct_option) {
+                selected_option = userAnswer?.selected_option;
+                if (selected_option === q.correct_option) {
                     score = 1;
                     objectiveScore++;
                 }
             }
             else if (q.type === 'theory') {
-                theoryAnswer = userAnswer?.theoryAnswer;
+                theory_answer = userAnswer?.theory_answer;
                 score = 0; // To be marked by admin
             }
-            await (0, Exams_1.saveAnswer)(submissionId, q.id, { selectedOption, theoryAnswer, score });
+            await (0, Exams_1.saveAnswer)(submissionId, q.id, { selected_option, theory_answer, score });
         }
         // 3. Update objective score in submission
         await db_1.default.execute('UPDATE exam_submissions SET objective_score = ? WHERE id = ?', [objectiveScore, submissionId]);

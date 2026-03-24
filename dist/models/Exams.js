@@ -62,7 +62,7 @@ const createSubmission = async (userId, examId, objectiveScore) => {
 };
 exports.createSubmission = createSubmission;
 const saveAnswer = async (submissionId, questionId, data) => {
-    await db_1.default.execute('INSERT INTO exam_answers (submission_id, question_id, selected_option, theory_answer, score) VALUES (?, ?, ?, ?, ?)', [submissionId, questionId, data.selectedOption ?? null, data.theoryAnswer ?? null, data.score]);
+    await db_1.default.execute('INSERT INTO exam_answers (submission_id, question_id, selected_option, theory_answer, score) VALUES (?, ?, ?, ?, ?)', [submissionId, questionId, data.selected_option ?? null, data.theory_answer ?? null, data.score]);
 };
 exports.saveAnswer = saveAnswer;
 const getSubmissionById = async (submissionId) => {

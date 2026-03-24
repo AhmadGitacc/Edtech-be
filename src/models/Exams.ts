@@ -116,10 +116,10 @@ export const createSubmission = async (userId: number, examId: number, objective
     return result.insertId;
 };
 
-export const saveAnswer = async (submissionId: number, questionId: number, data: { selectedOption?: number, theoryAnswer?: string, score: number }) => {
+export const saveAnswer = async (submissionId: number, questionId: number, data: { selected_option?: number, theory_answer?: string, score: number }) => {
     await pool.execute(
         'INSERT INTO exam_answers (submission_id, question_id, selected_option, theory_answer, score) VALUES (?, ?, ?, ?, ?)',
-        [submissionId, questionId, data.selectedOption ?? null, data.theoryAnswer ?? null, data.score]
+        [submissionId, questionId, data.selected_option ?? null, data.theory_answer ?? null, data.score]
     );
 };
 
