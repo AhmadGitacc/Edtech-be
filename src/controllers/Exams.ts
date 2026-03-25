@@ -49,12 +49,12 @@ export const submitExam = async (req: AuthRequest, res: express.Response) => {
                 theory_answer = userAnswer.theory_answer;
                 selected_option = userAnswer.selected_option;
                 
-                if (q.type === 'objective'&& selected_option !== null) {
+                if (q.Type === 'objective'&& selected_option !== null) {
                     if (Number(selected_option) === Number(q.correct_option)) {
                         score = 1;
                         objectiveScore++;
                     }
-                } else if (q.type === 'theory'&& theory_answer !== null) {
+                } else if (q.Type === 'theory'&& theory_answer !== null) {
                     score = 0; // To be marked by admin
                 }
                 
