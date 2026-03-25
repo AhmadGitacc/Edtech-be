@@ -38,28 +38,27 @@ const submitExam = async (req, res) => {
             return res.status(404).json({ success: false, message: "Exam not found" });
         const questions = await (0, Exams_1.getQuestionsByExamId)(exam.id);
         let objectiveScore = 0;
-        // 1. Create submission record
         const submissionId = await (0, Exams_1.createSubmission)(userId, exam.id, 0); // Temporary score
-        // 2. Process answers
         for (const q of questions) {
-            const userAnswer = answers.find((a) => a.questionId === q.id);
+            const userAnswer = answers.find((a) => Number(a.questionId) === Number(q.id));
             let score = 0;
             let theory_answer = null;
             let selected_option = null;
-            if (q.type === 'objective') {
-                selected_option = userAnswer?.selected_option;
-                if (selected_option === q.correct_option) {
-                    score = 1;
-                    objectiveScore++;
+            if (userAnswer) {
+                theory_answer = userAnswer.theory_answer;
+                selected_option = userAnswer.selected_option;
+                if (q.type === 'objective' && selected_option !== null) {
+                    if (Number(selected_option) === Number(q.correct_option)) {
+                        score = 1;
+                        objectiveScore++;
+                    }
                 }
-            }
-            else if (q.type === 'theory') {
-                theory_answer = userAnswer?.theory_answer;
-                score = 0; // To be marked by admin
+                else if (q.type === 'theory' && theory_answer !== null) {
+                    score = 0; // To be marked by admin
+                }
             }
             await (0, Exams_1.saveAnswer)(submissionId, q.id, { selected_option, theory_answer, score });
         }
-        // 3. Update objective score in submission
         await db_1.default.execute('UPDATE exam_submissions SET objective_score = ? WHERE id = ?', [objectiveScore, submissionId]);
         return res.status(200).json({
             success: true,
