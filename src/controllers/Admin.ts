@@ -1,7 +1,7 @@
 import express from "express";
 import pool from "../db";
 import { ResultSetHeader, RowDataPacket } from "mysql2";
-import { getUsers, setUserStatus, getUserStats } from "../models/Users";
+import { getUsers, setUserStatus, getUserStats, getUserById, updateUserById } from "../models/Users";
 import { createCertificate, createExam, updateExam, deleteExam, addQuestion, updateQuestion, deleteQuestion, getExamByCourseId, getQuestionsByExamId } from "../models/Exams";
 import { deleteCourse, deleteLesson, setCourseStatus, getAllCourses, updateCourse, updateLesson, getLessonsByCourseId } from "../models/Courses";
 import { createCategory } from "../models/Categories";
@@ -10,6 +10,7 @@ import { sendCertificateEmail } from "../helpers/email";
 import fs from 'fs';
 import path from 'path';
 import { AuthRequest } from "middlewares/auth";
+import { authentication, random } from "../helpers";
 
 export const adminGetUsers = async (req: express.Request, res: express.Response) => {
     try {
@@ -37,6 +38,49 @@ export const adminToggleUserStatus = async (req: express.Request, res: express.R
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
+
+export const adminUpdateUser = async (req: express.Request, res: express.Response) => {
+    try {
+        const {userId} = req.params;
+        if (!userId) return res.status(401).json({ message: "Unauthorized" });
+
+        const { role, password } = req.body;
+
+        const user = await getUserById(Number(userId));
+        if (!user) {
+            return res.status(404).json({ message: "User doesn't exist" });
+        }
+
+        const updateValues: any = {};
+        if (role) updateValues.role = role;
+        if (password) {
+            const salt = random();
+            updateValues.salt = salt;
+            updateValues.password = authentication(salt, password);
+        }
+
+        if (Object.keys(updateValues).length === 0) {
+            return res.status(400).json({ message: "No changes detected" });
+        }
+
+        await updateUserById(Number(userId), updateValues);
+
+        const safeResponse = {
+            id: userId,
+            role: role || user.role,
+        };
+
+        return res.status(200).json({ 
+            success: true, 
+            data: safeResponse, 
+            message: "Profile updated successfully" 
+        });
+
+    } catch (err) {
+        console.error("Update User Error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+}
 
 export const adminCreateCourse = async (req: express.Request, res: express.Response) => {
     try {

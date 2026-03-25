@@ -4,7 +4,7 @@ import { login, signup, logout } from '../controllers/Auth';
 import { listCourses, getCourseDetails, getLessonDetails, completeLesson, getMyCourses, listCategories, getCourseLessons, getProgress } from '../controllers/Courses';
 import { getCourseExam, submitExam, getUserExamHistory } from '../controllers/Exams';
 import { initializePayment, paystackWebhook } from '../controllers/Payments';
-import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminGradeSubmission, adminApproveSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion, adminDeleteCourse, adminDeleteLesson, adminGetStats, adminToggleUserStatus, adminCreateCategory, adminGetActivityLogs, adminListCourses, adminToggleCourseStatus, adminUpdateCourse, adminUpdateLesson, adminGetCourseLessons, adminGetCourseExam } from '../controllers/Admin';
+import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminGradeSubmission, adminApproveSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion, adminDeleteCourse, adminDeleteLesson, adminGetStats, adminToggleUserStatus, adminCreateCategory, adminGetActivityLogs, adminListCourses, adminToggleCourseStatus, adminUpdateCourse, adminUpdateLesson, adminGetCourseLessons, adminGetCourseExam, adminUpdateUser } from '../controllers/Admin';
 import { isAuthenticated, isAdmin } from '../middlewares/auth';
 import { sendEnquiryMessage } from '../controllers/Email';
 import { upload } from '../middlewares/multer';
@@ -46,6 +46,7 @@ export default (): express.Router => {
     // Admin
     router.get('/admin/users', isAuthenticated, isAdmin, adminGetUsers);
     router.patch('/admin/users/:id/status', isAuthenticated, isAdmin, adminToggleUserStatus);
+    router.patch('/admin/user/update/:id', isAuthenticated, isAdmin, adminUpdateUser);
     router.post('/admin/courses', isAuthenticated, isAdmin, upload.single('cover_image'), adminCreateCourse);
     router.patch('/admin/courses/:id', isAuthenticated, isAdmin, upload.single('cover_image'), adminUpdateCourse);
     router.get('/admin/courses', isAuthenticated, isAdmin, adminListCourses);

@@ -41,6 +41,7 @@ exports.default = () => {
     // Admin
     router.get('/admin/users', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetUsers);
     router.patch('/admin/users/:id/status', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminToggleUserStatus);
+    router.patch('/admin/user/update/:id', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminUpdateUser);
     router.post('/admin/courses', auth_1.isAuthenticated, auth_1.isAdmin, multer_1.upload.single('cover_image'), Admin_1.adminCreateCourse);
     router.patch('/admin/courses/:id', auth_1.isAuthenticated, auth_1.isAdmin, multer_1.upload.single('cover_image'), Admin_1.adminUpdateCourse);
     router.get('/admin/courses', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminListCourses);

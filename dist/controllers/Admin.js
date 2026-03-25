@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminGetCourseLessons = exports.adminUpdateLesson = exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminGetCourseExam = exports.adminApproveSubmission = exports.adminGradeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminUpdateCourse = exports.adminCreateCourse = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
+exports.adminGetCourseLessons = exports.adminUpdateLesson = exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminGetCourseExam = exports.adminApproveSubmission = exports.adminGradeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminUpdateCourse = exports.adminCreateCourse = exports.adminUpdateUser = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
 const db_1 = __importDefault(require("../db"));
 const Users_1 = require("../models/Users");
 const Exams_1 = require("../models/Exams");
@@ -13,6 +13,7 @@ const ActivityLogs_1 = require("../models/ActivityLogs");
 const email_1 = require("../helpers/email");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+const helpers_1 = require("../helpers");
 const adminGetUsers = async (req, res) => {
     try {
         const { q, limit, offset } = req.query;
@@ -38,6 +39,44 @@ const adminToggleUserStatus = async (req, res) => {
     }
 };
 exports.adminToggleUserStatus = adminToggleUserStatus;
+const adminUpdateUser = async (req, res) => {
+    try {
+        const { userId } = req.params;
+        if (!userId)
+            return res.status(401).json({ message: "Unauthorized" });
+        const { role, password } = req.body;
+        const user = await (0, Users_1.getUserById)(Number(userId));
+        if (!user) {
+            return res.status(404).json({ message: "User doesn't exist" });
+        }
+        const updateValues = {};
+        if (role)
+            updateValues.role = role;
+        if (password) {
+            const salt = (0, helpers_1.random)();
+            updateValues.salt = salt;
+            updateValues.password = (0, helpers_1.authentication)(salt, password);
+        }
+        if (Object.keys(updateValues).length === 0) {
+            return res.status(400).json({ message: "No changes detected" });
+        }
+        await (0, Users_1.updateUserById)(Number(userId), updateValues);
+        const safeResponse = {
+            id: userId,
+            role: role || user.role,
+        };
+        return res.status(200).json({
+            success: true,
+            data: safeResponse,
+            message: "Profile updated successfully"
+        });
+    }
+    catch (err) {
+        console.error("Update User Error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+exports.adminUpdateUser = adminUpdateUser;
 const adminCreateCourse = async (req, res) => {
     try {
         const { title, description, price, video_link } = req.body;
