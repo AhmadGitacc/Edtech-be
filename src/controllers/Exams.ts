@@ -27,7 +27,7 @@ export const getCourseExam = async (req: AuthRequest, res: express.Response) => 
 export const submitExam = async (req: AuthRequest, res: express.Response) => {
     try {
         const { id } = req.params;
-        const { answers } = req.body; // Array of { questionId, selectedOption, theoryAnswer }
+        const { answers } = req.body;
         const userId = req.user?.id;
         if (!userId) return res.sendStatus(401);
 

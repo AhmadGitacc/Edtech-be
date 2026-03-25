@@ -29,7 +29,7 @@ exports.getCourseExam = getCourseExam;
 const submitExam = async (req, res) => {
     try {
         const { id } = req.params;
-        const { answers } = req.body; // Array of { questionId, selectedOption, theoryAnswer }
+        const { answers } = req.body;
         const userId = req.user?.id;
         if (!userId)
             return res.sendStatus(401);
