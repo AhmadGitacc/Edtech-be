@@ -250,7 +250,7 @@ const adminGetPendingExams = async (req, res) => {
              JOIN exams e ON es.exam_id = e.id
              JOIN courses c ON e.course_id = c.id
              JOIN exam_answers ea ON es.id = ea.submission_id
-             JOIN questions q ON ea.question_id = q.id
+             JOIN exam_questions q ON ea.question_id = q.id
              WHERE es.STATUS = 'pending' AND q.TYPE = 'theory'`);
         return res.status(200).json({ success: true, data: rows, message: "Pending exams fetched" });
     }
