@@ -42,7 +42,7 @@ export const adminToggleUserStatus = async (req: express.Request, res: express.R
 export const adminUpdateUser = async (req: express.Request, res: express.Response) => {
     try {
         const {userId} = req.params;
-        if (!userId) return res.status(401).json({ message: "Unauthorized" });
+        if (!userId) return res.status(400).json({ message: "User id required" });
 
         const { role, password } = req.body;
 

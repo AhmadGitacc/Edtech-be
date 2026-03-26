@@ -46,7 +46,7 @@ export default (): express.Router => {
     // Admin
     router.get('/admin/users', isAuthenticated, isAdmin, adminGetUsers);
     router.patch('/admin/users/:id/status', isAuthenticated, isAdmin, adminToggleUserStatus);
-    router.patch('/admin/user/update/:id', isAuthenticated, isAdmin, adminUpdateUser);
+    router.patch('/admin/user/update/:userId', isAuthenticated, isAdmin, adminUpdateUser);
     router.post('/admin/courses', isAuthenticated, isAdmin, upload.single('cover_image'), adminCreateCourse);
     router.patch('/admin/courses/:id', isAuthenticated, isAdmin, upload.single('cover_image'), adminUpdateCourse);
     router.get('/admin/courses', isAuthenticated, isAdmin, adminListCourses);

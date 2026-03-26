@@ -43,7 +43,7 @@ const adminUpdateUser = async (req, res) => {
     try {
         const { userId } = req.params;
         if (!userId)
-            return res.status(401).json({ message: "Unauthorized" });
+            return res.status(400).json({ message: "User id required" });
         const { role, password } = req.body;
         const user = await (0, Users_1.getUserById)(Number(userId));
         if (!user) {
