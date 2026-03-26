@@ -296,40 +296,15 @@ export const adminGetPendingExams = async (req: express.Request, res: express.Re
     }
 };
 
-export const adminGradeSubmission = async (req: express.Request, res: express.Response) => {
+export const adminFinalizeSubmission = async (req: express.Request, res: express.Response) => {
     try {
         const { id } = req.params; // submissionId
         const { theoryScore } = req.body;
 
-        const [submissionRows] = await pool.execute<RowDataPacket[]>(
-            'SELECT objective_score FROM exam_submissions WHERE id = ?',
-            [id]
-        );
-
-        if (submissionRows.length === 0) {
-            return res.status(404).json({ success: false, message: "Submission not found" });
-        }
-
-        const totalScore = submissionRows[0].objective_score + Number(theoryScore);
-
-        await pool.execute(
-            'UPDATE exam_submissions SET theory_score = ?, total_score = ?, status = "graded" WHERE id = ?',
-            [theoryScore, totalScore, id]
-        );
-
-        return res.status(200).json({ success: true, message: "Submission graded successfully" });
-    } catch (err) {
-        console.error(err);
-        return res.status(500).json({ success: false, message: "Internal server error" });
-    }
-};
-
-export const adminApproveSubmission = async (req: express.Request, res: express.Response) => {
-    try {
-        const { id } = req.params; // submissionId
+        if (theoryScore === undefined) return res.status(400).json({ message: "Theory score is required" });
 
         const [rows] = await pool.execute<RowDataPacket[]>(
-            `SELECT es.*, e.course_id, e.pass_percentage, u.email 
+            `SELECT es.objective_score, e.course_id, e.pass_percentage, u.id AS user_id, u.email 
              FROM exam_submissions es
              JOIN exams e ON es.exam_id = e.id
              JOIN users u ON es.user_id = u.id
@@ -337,29 +312,38 @@ export const adminApproveSubmission = async (req: express.Request, res: express.
             [id]
         );
 
-        if (rows.length === 0) {
-            return res.status(404).json({ success: false, message: "Submission not found" });
+        if (rows.length === 0) return res.status(404).json({ success: false, message: "Submission not found" });
+
+        const { objective_score, pass_percentage, user_id, course_id, email } = rows[0];
+        
+        const totalScore = Number(objective_score) + Number(theoryScore);
+        const passed = totalScore >= (pass_percentage || 50); 
+        const finalStatus = passed ? "approved" : "failed";
+
+        await pool.execute(
+            'UPDATE exam_submissions SET theory_score = ?, total_score = ?, status = ?, passed = ? WHERE id = ?',
+            [theoryScore, totalScore, finalStatus, passed ? 1 : 0, id]
+        );
+
+        let certUuid = null;
+        if (passed) {
+            certUuid = await createCertificate(user_id, course_id);
+            await sendCertificateEmail(email, certUuid);
+            console.log(`Certificate ${certUuid} sent to ${email}`);
         }
 
-        const submission = rows[0];
+        return res.status(200).json({ 
+            success: true, 
+            data: { 
+                finalScore: totalScore, 
+                passed, 
+                certificateUuid: certUuid 
+            }, 
+            message: passed ? "Graded, approved, and certificate sent!" : "Graded. Candidate did not meet pass requirements."
+        });
 
-        if (submission.status !== 'graded') {
-            return res.status(400).json({ success: false, message: "Submission must be graded before approval" });
-        }
-
-        // Generate certificate
-        const certUuid = await createCertificate(submission.user_id, submission.course_id);
-
-        // Update status
-        await pool.execute('UPDATE exam_submissions SET status = "approved" WHERE id = ?', [id]);
-
-        // Send email via Resend
-        await sendCertificateEmail(submission.email, certUuid);
-        console.log(`Certificate generated: ${certUuid}. Email sent to ${submission.email}`);
-
-        return res.status(200).json({ success: true, data: { certificateUuid: certUuid }, message: "Submission approved and certificate generated." });
     } catch (err) {
-        console.error(err);
+        console.error("Finalize Error:", err);
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };

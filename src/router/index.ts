@@ -4,7 +4,7 @@ import { login, signup, logout } from '../controllers/Auth';
 import { listCourses, getCourseDetails, getLessonDetails, completeLesson, getMyCourses, listCategories, getCourseLessons, getProgress } from '../controllers/Courses';
 import { getCourseExam, submitExam, getUserExamHistory } from '../controllers/Exams';
 import { initializePayment, paystackWebhook } from '../controllers/Payments';
-import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminGradeSubmission, adminApproveSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion, adminDeleteCourse, adminDeleteLesson, adminGetStats, adminToggleUserStatus, adminCreateCategory, adminGetActivityLogs, adminListCourses, adminToggleCourseStatus, adminUpdateCourse, adminUpdateLesson, adminGetCourseLessons, adminGetCourseExam, adminUpdateUser } from '../controllers/Admin';
+import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminFinalizeSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion, adminDeleteCourse, adminDeleteLesson, adminGetStats, adminToggleUserStatus, adminCreateCategory, adminGetActivityLogs, adminListCourses, adminToggleCourseStatus, adminUpdateCourse, adminUpdateLesson, adminGetCourseLessons, adminGetCourseExam, adminUpdateUser } from '../controllers/Admin';
 import { isAuthenticated, isAdmin } from '../middlewares/auth';
 import { sendEnquiryMessage } from '../controllers/Email';
 import { upload } from '../middlewares/multer';
@@ -62,15 +62,13 @@ export default (): express.Router => {
 
     // Exam Management
     router.get('/admin/exams/pending', isAuthenticated, isAdmin, adminGetPendingExams);
-    router.patch('/admin/submissions/:id/grade', isAuthenticated, isAdmin, adminGradeSubmission);
-    router.post('/admin/submissions/:id/approve', isAuthenticated, isAdmin, adminApproveSubmission);
-
+    router.patch('/submissions/:id/finalize', isAuthenticated, isAdmin, adminFinalizeSubmission);
     // Exam CRUD
     router.get('/admin/courses/:id/exam', isAuthenticated, isAdmin, adminGetCourseExam);
     router.post('/admin/courses/:id/exam', isAuthenticated, isAdmin, adminCreateExam);
     router.patch('/admin/exams/:id', isAuthenticated, isAdmin, adminUpdateExam);
     router.delete('/admin/exams/:id', isAuthenticated, isAdmin, adminDeleteExam);
-    
+
     // Question CRUD
     router.post('/admin/exams/:id/questions', isAuthenticated, isAdmin, adminAddQuestion);
     router.patch('/admin/questions/:id', isAuthenticated, isAdmin, adminUpdateQuestion);

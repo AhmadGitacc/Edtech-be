@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminGetCourseLessons = exports.adminUpdateLesson = exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminGetCourseExam = exports.adminApproveSubmission = exports.adminGradeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminUpdateCourse = exports.adminCreateCourse = exports.adminUpdateUser = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
+exports.adminGetCourseLessons = exports.adminUpdateLesson = exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminGetCourseExam = exports.adminFinalizeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminUpdateCourse = exports.adminCreateCourse = exports.adminUpdateUser = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
 const db_1 = __importDefault(require("../db"));
 const Users_1 = require("../models/Users");
 const Exams_1 = require("../models/Exams");
@@ -260,54 +260,46 @@ const adminGetPendingExams = async (req, res) => {
     }
 };
 exports.adminGetPendingExams = adminGetPendingExams;
-const adminGradeSubmission = async (req, res) => {
+const adminFinalizeSubmission = async (req, res) => {
     try {
         const { id } = req.params; // submissionId
         const { theoryScore } = req.body;
-        const [submissionRows] = await db_1.default.execute('SELECT objective_score FROM exam_submissions WHERE id = ?', [id]);
-        if (submissionRows.length === 0) {
-            return res.status(404).json({ success: false, message: "Submission not found" });
-        }
-        const totalScore = submissionRows[0].objective_score + Number(theoryScore);
-        await db_1.default.execute('UPDATE exam_submissions SET theory_score = ?, total_score = ?, status = "graded" WHERE id = ?', [theoryScore, totalScore, id]);
-        return res.status(200).json({ success: true, message: "Submission graded successfully" });
-    }
-    catch (err) {
-        console.error(err);
-        return res.status(500).json({ success: false, message: "Internal server error" });
-    }
-};
-exports.adminGradeSubmission = adminGradeSubmission;
-const adminApproveSubmission = async (req, res) => {
-    try {
-        const { id } = req.params; // submissionId
-        const [rows] = await db_1.default.execute(`SELECT es.*, e.course_id, e.pass_percentage, u.email 
+        if (theoryScore === undefined)
+            return res.status(400).json({ message: "Theory score is required" });
+        const [rows] = await db_1.default.execute(`SELECT es.objective_score, e.course_id, e.pass_percentage, u.id AS user_id, u.email 
              FROM exam_submissions es
              JOIN exams e ON es.exam_id = e.id
              JOIN users u ON es.user_id = u.id
              WHERE es.id = ?`, [id]);
-        if (rows.length === 0) {
+        if (rows.length === 0)
             return res.status(404).json({ success: false, message: "Submission not found" });
+        const { objective_score, pass_percentage, user_id, course_id, email } = rows[0];
+        const totalScore = Number(objective_score) + Number(theoryScore);
+        const passed = totalScore >= (pass_percentage || 50);
+        const finalStatus = passed ? "approved" : "failed";
+        await db_1.default.execute('UPDATE exam_submissions SET theory_score = ?, total_score = ?, status = ?, passed = ? WHERE id = ?', [theoryScore, totalScore, finalStatus, passed ? 1 : 0, id]);
+        let certUuid = null;
+        if (passed) {
+            certUuid = await (0, Exams_1.createCertificate)(user_id, course_id);
+            await (0, email_1.sendCertificateEmail)(email, certUuid);
+            console.log(`Certificate ${certUuid} sent to ${email}`);
         }
-        const submission = rows[0];
-        if (submission.status !== 'graded') {
-            return res.status(400).json({ success: false, message: "Submission must be graded before approval" });
-        }
-        // Generate certificate
-        const certUuid = await (0, Exams_1.createCertificate)(submission.user_id, submission.course_id);
-        // Update status
-        await db_1.default.execute('UPDATE exam_submissions SET status = "approved" WHERE id = ?', [id]);
-        // Send email via Resend
-        await (0, email_1.sendCertificateEmail)(submission.email, certUuid);
-        console.log(`Certificate generated: ${certUuid}. Email sent to ${submission.email}`);
-        return res.status(200).json({ success: true, data: { certificateUuid: certUuid }, message: "Submission approved and certificate generated." });
+        return res.status(200).json({
+            success: true,
+            data: {
+                finalScore: totalScore,
+                passed,
+                certificateUuid: certUuid
+            },
+            message: passed ? "Graded, approved, and certificate sent!" : "Graded. Candidate did not meet pass requirements."
+        });
     }
     catch (err) {
-        console.error(err);
+        console.error("Finalize Error:", err);
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
-exports.adminApproveSubmission = adminApproveSubmission;
+exports.adminFinalizeSubmission = adminFinalizeSubmission;
 // Exam CRUD
 const adminGetCourseExam = async (req, res) => {
     try {

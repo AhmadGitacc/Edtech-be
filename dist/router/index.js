@@ -56,8 +56,7 @@ exports.default = () => {
     router.get('/admin/activity-logs', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetActivityLogs);
     // Exam Management
     router.get('/admin/exams/pending', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetPendingExams);
-    router.patch('/admin/submissions/:id/grade', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGradeSubmission);
-    router.post('/admin/submissions/:id/approve', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminApproveSubmission);
+    router.patch('/submissions/:id/finalize', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminFinalizeSubmission);
     // Exam CRUD
     router.get('/admin/courses/:id/exam', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetCourseExam);
     router.post('/admin/courses/:id/exam', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminCreateExam);
