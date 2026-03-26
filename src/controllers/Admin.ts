@@ -41,7 +41,7 @@ export const adminToggleUserStatus = async (req: express.Request, res: express.R
 
 export const adminUpdateUser = async (req: express.Request, res: express.Response) => {
     try {
-        const {userId} = req.params;
+        const { userId } = req.params;
         if (!userId) return res.status(400).json({ message: "User id required" });
 
         const { role, password } = req.body;
@@ -70,10 +70,10 @@ export const adminUpdateUser = async (req: express.Request, res: express.Respons
             role: role || user.role,
         };
 
-        return res.status(200).json({ 
-            success: true, 
-            data: safeResponse, 
-            message: "Profile updated successfully" 
+        return res.status(200).json({
+            success: true,
+            data: safeResponse,
+            message: "Profile updated successfully"
         });
 
     } catch (err) {
@@ -272,11 +272,22 @@ export const adminGetActivityLogs = async (req: express.Request, res: express.Re
 export const adminGetPendingExams = async (req: express.Request, res: express.Response) => {
     try {
         const [rows] = await pool.execute<RowDataPacket[]>(
-            `SELECT es.*, u.username, u.email, e.course_id 
+                `SELECT 
+                es.id, 
+                es.objective_score, 
+                es.STATUS, 
+                u.username, 
+                u.email, 
+                c.title AS courseTitle, 
+                ea.theory_answer, 
+                q.question_text
              FROM exam_submissions es
              JOIN users u ON es.user_id = u.id
              JOIN exams e ON es.exam_id = e.id
-             WHERE es.status = 'pending'`
+             JOIN courses c ON e.course_id = c.id
+             JOIN exam_answers ea ON es.id = ea.submission_id
+             JOIN questions q ON ea.question_id = q.id
+             WHERE es.STATUS = 'pending' AND q.TYPE = 'theory'`
         );
         return res.status(200).json({ success: true, data: rows, message: "Pending exams fetched" });
     } catch (err) {

@@ -236,11 +236,22 @@ const adminGetActivityLogs = async (req, res) => {
 exports.adminGetActivityLogs = adminGetActivityLogs;
 const adminGetPendingExams = async (req, res) => {
     try {
-        const [rows] = await db_1.default.execute(`SELECT es.*, u.username, u.email, e.course_id 
+        const [rows] = await db_1.default.execute(`SELECT 
+                es.id, 
+                es.objective_score, 
+                es.STATUS, 
+                u.username, 
+                u.email, 
+                c.title AS courseTitle, 
+                ea.theory_answer, 
+                q.question_text
              FROM exam_submissions es
              JOIN users u ON es.user_id = u.id
              JOIN exams e ON es.exam_id = e.id
-             WHERE es.status = 'pending'`);
+             JOIN courses c ON e.course_id = c.id
+             JOIN exam_answers ea ON es.id = ea.submission_id
+             JOIN questions q ON ea.question_id = q.id
+             WHERE es.STATUS = 'pending' AND q.TYPE = 'theory'`);
         return res.status(200).json({ success: true, data: rows, message: "Pending exams fetched" });
     }
     catch (err) {
