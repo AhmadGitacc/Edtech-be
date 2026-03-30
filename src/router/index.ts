@@ -1,7 +1,7 @@
 import express from 'express';
 
 import { login, signup, logout } from '../controllers/Auth';
-import { listCourses, getCourseDetails, getLessonDetails, completeLesson, getMyCourses, listCategories, getCourseLessons, getProgress } from '../controllers/Courses';
+import { listCourses, getCourseDetails, getLessonDetails, completeLesson, getMyCourses, listCategories, getCourseLessons, getProgress, getUserCertificate } from '../controllers/Courses';
 import { getCourseExam, submitExam, getUserExamHistory } from '../controllers/Exams';
 import { initializePayment, paystackWebhook } from '../controllers/Payments';
 import { adminGetUsers, adminCreateCourse, adminCreateLesson, adminGetPendingExams, adminFinalizeSubmission, adminCreateExam, adminUpdateExam, adminDeleteExam, adminAddQuestion, adminUpdateQuestion, adminDeleteQuestion, adminDeleteCourse, adminDeleteLesson, adminGetStats, adminToggleUserStatus, adminCreateCategory, adminGetActivityLogs, adminListCourses, adminToggleCourseStatus, adminUpdateCourse, adminUpdateLesson, adminGetCourseLessons, adminGetCourseExam, adminUpdateUser } from '../controllers/Admin';
@@ -38,6 +38,7 @@ export default (): express.Router => {
     router.get('/courses/:id/exam', isAuthenticated, getCourseExam);
     router.post('/courses/:id/exam/submit', isAuthenticated, submitExam);
     router.get('/user/exams/history', isAuthenticated, getUserExamHistory);
+    router.get('/user/certificates/:courseId', isAuthenticated, getUserCertificate);
 
     // Payments
     router.post('/payments/initialize', isAuthenticated, initializePayment);

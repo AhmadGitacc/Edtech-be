@@ -35,6 +35,7 @@ exports.default = () => {
     router.get('/courses/:id/exam', auth_1.isAuthenticated, Exams_1.getCourseExam);
     router.post('/courses/:id/exam/submit', auth_1.isAuthenticated, Exams_1.submitExam);
     router.get('/user/exams/history', auth_1.isAuthenticated, Exams_1.getUserExamHistory);
+    router.get('/user/certificates/:courseId', auth_1.isAuthenticated, Courses_1.getUserCertificate);
     // Payments
     router.post('/payments/initialize', auth_1.isAuthenticated, Payments_1.initializePayment);
     router.post('/payments/webhook', express_1.default.raw({ type: 'application/json' }), Payments_1.paystackWebhook);

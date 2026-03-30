@@ -144,3 +144,47 @@ export const getProgress = async (req: AuthRequest, res: express.Response) => {
         return res.status(500).json({ success: false, data: null, message: "Internal server error" });
     }
 };
+
+export const getUserCertificate = async (req: AuthRequest, res: express.Response) => {
+    try {
+        const { courseId } = req.params;
+        const userId = req.user?.id;
+
+        if (!userId) return res.sendStatus(401);
+
+        const query = `
+            SELECT 
+                cert.certificate_uuid, 
+                cert.created_at AS issue_date,
+                c.title AS course_title,
+                u.username
+            FROM certificates cert
+            JOIN courses c ON cert.course_id = c.id
+            JOIN users u ON cert.user_id = u.id
+            WHERE cert.user_id = ? AND cert.course_id = ?
+        `;
+
+        const [rows]: any = await pool.execute(query, [userId, courseId]);
+
+        if (rows.length === 0) {
+            return res.status(404).json({ 
+                success: false, 
+                data: null, 
+                message: "Certificate not found for this course" 
+            });
+        }
+
+        return res.status(200).json({ 
+            success: true, 
+            data: rows[0], 
+            message: "Certificate details fetched successfully" 
+        });
+    } catch (err) {
+        console.error("Fetch Certificate Error:", err);
+        return res.status(500).json({ 
+            success: false, 
+            data: null, 
+            message: "Internal server error" 
+        });
+    }
+};
