@@ -238,11 +238,13 @@ const adminGetPendingExams = async (req, res) => {
     try {
         const [rows] = await db_1.default.execute(`SELECT 
                 es.id, 
+                es.user_id, 
                 es.objective_score, 
                 es.STATUS, 
                 u.username, 
                 u.email, 
-                c.title AS courseTitle, 
+                c.title AS courseTitle,
+                c.id AS courseId, 
                 ea.theory_answer, 
                 q.question_text
              FROM exam_submissions es

@@ -274,11 +274,13 @@ export const adminGetPendingExams = async (req: express.Request, res: express.Re
         const [rows] = await pool.execute<RowDataPacket[]>(
                 `SELECT 
                 es.id, 
+                es.user_id, 
                 es.objective_score, 
                 es.STATUS, 
                 u.username, 
                 u.email, 
-                c.title AS courseTitle, 
+                c.title AS courseTitle,
+                c.id AS courseId, 
                 ea.theory_answer, 
                 q.question_text
              FROM exam_submissions es
