@@ -4,6 +4,8 @@ import { createEnrollment, updateEnrollmentStatus, getEnrollmentByReference } fr
 import { AuthRequest } from "../middlewares/auth";
 import crypto from "crypto";
 import { getCourseById } from "../models/Courses";
+import { createLog } from "../models/ActivityLogs";
+import { getUserById } from "../models/Users";
 
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET;
 
@@ -12,6 +14,7 @@ export const initializePayment = async (req: AuthRequest, res: express.Response)
         const { courseId } = req.body;
         const userId = req.user?.id;
         const email = req.user?.email;
+        const user = await getUserById(Number(userId))
 
         if (!userId || !email) return res.sendStatus(401);
 
@@ -35,6 +38,8 @@ export const initializePayment = async (req: AuthRequest, res: express.Response)
 
         await createEnrollment(userId, Number(courseId), reference);
 
+        await createLog(user.id, user.username, 'ENROLLMENT', `${user.username} paid for ${course.title} (awaiting payment confirmation)`);
+
         return res.status(200).json({ success: true, data: { authorization_url, reference }, message: "Payment initialized" });
     } catch (err) {
         console.error(err);
@@ -53,6 +58,7 @@ export const paystackWebhook = async (req: express.Request, res: express.Respons
         if (event.event === 'charge.success') {
             const { reference } = event.data;
             await updateEnrollmentStatus(reference, 'success');
+            await createLog(reference, "confirmation", 'PAYMENT', `Payment Confirmed for ${reference})`);
         }
 
         return res.sendStatus(200);

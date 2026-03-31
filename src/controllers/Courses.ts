@@ -4,6 +4,8 @@ import { getAllCategories } from "../models/Categories";
 import { getEnrollmentsByUserId } from "../models/Payments";
 import { AuthRequest } from "../middlewares/auth";
 import pool from '../db';
+import { getUserById } from "../models/Users";
+import { createLog } from "../models/ActivityLogs";
 
 export const listCourses = async (req: express.Request, res: express.Response) => {
     try {
@@ -68,8 +70,11 @@ export const completeLesson = async (req: AuthRequest, res: express.Response) =>
         const { id } = req.params;
         const userId = req.user?.id;
         if (!userId) return res.sendStatus(401);
+        const user = await getUserById(Number(userId))
 
         await trackProgress(userId, Number(id));
+        await createLog(user.id, user.username, 'LESSON COURSE', `${user.username} completed a lesson`);
+
         return res.status(200).json({ success: true, data: null, message: "Lesson marked as complete" });
     } catch (err) {
         console.error(err);
@@ -138,6 +143,7 @@ export const getProgress = async (req: AuthRequest, res: express.Response) => {
         if (!userId) return res.sendStatus(401);
 
         const progress = await getProgressModel(userId, Number(id));
+
         return res.status(200).json({ success: true, data: progress, message: "Course progress fetched" });
     } catch (err) {
         console.error(err);
@@ -167,24 +173,24 @@ export const getUserCertificate = async (req: AuthRequest, res: express.Response
         const [rows]: any = await pool.execute(query, [userId, courseId]);
 
         if (rows.length === 0) {
-            return res.status(404).json({ 
-                success: false, 
-                data: null, 
-                message: "Certificate not found for this course" 
+            return res.status(404).json({
+                success: false,
+                data: null,
+                message: "Certificate not found for this course"
             });
         }
 
-        return res.status(200).json({ 
-            success: true, 
-            data: rows[0], 
-            message: "Certificate details fetched successfully" 
+        return res.status(200).json({
+            success: true,
+            data: rows[0],
+            message: "Certificate details fetched successfully"
         });
     } catch (err) {
         console.error("Fetch Certificate Error:", err);
-        return res.status(500).json({ 
-            success: false, 
-            data: null, 
-            message: "Internal server error" 
+        return res.status(500).json({
+            success: false,
+            data: null,
+            message: "Internal server error"
         });
     }
 };

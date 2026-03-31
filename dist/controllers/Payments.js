@@ -8,12 +8,15 @@ const axios_1 = __importDefault(require("axios"));
 const Payments_1 = require("../models/Payments");
 const crypto_1 = __importDefault(require("crypto"));
 const Courses_1 = require("../models/Courses");
+const ActivityLogs_1 = require("../models/ActivityLogs");
+const Users_1 = require("../models/Users");
 const PAYSTACK_SECRET = process.env.PAYSTACK_SECRET;
 const initializePayment = async (req, res) => {
     try {
         const { courseId } = req.body;
         const userId = req.user?.id;
         const email = req.user?.email;
+        const user = await (0, Users_1.getUserById)(Number(userId));
         if (!userId || !email)
             return res.sendStatus(401);
         const course = await (0, Courses_1.getCourseById)(Number(courseId));
@@ -32,6 +35,7 @@ const initializePayment = async (req, res) => {
         });
         const { authorization_url, reference } = response.data.data;
         await (0, Payments_1.createEnrollment)(userId, Number(courseId), reference);
+        await (0, ActivityLogs_1.createLog)(user.id, user.username, 'ENROLLMENT', `${user.username} paid for ${course.title} (awaiting payment confirmation)`);
         return res.status(200).json({ success: true, data: { authorization_url, reference }, message: "Payment initialized" });
     }
     catch (err) {
@@ -50,6 +54,7 @@ const paystackWebhook = async (req, res) => {
         if (event.event === 'charge.success') {
             const { reference } = event.data;
             await (0, Payments_1.updateEnrollmentStatus)(reference, 'success');
+            await (0, ActivityLogs_1.createLog)(reference, "confirmation", 'PAYMENT', `Payment Confirmed for ${reference})`);
         }
         return res.sendStatus(200);
     }

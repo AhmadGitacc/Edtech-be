@@ -6,6 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getUserExamHistory = exports.submitExam = exports.getCourseExam = void 0;
 const db_1 = __importDefault(require("../db"));
 const Exams_1 = require("../models/Exams");
+const ActivityLogs_1 = require("../models/ActivityLogs");
+const Users_1 = require("../models/Users");
+const Courses_1 = require("../models/Courses");
 const getCourseExam = async (req, res) => {
     try {
         const { id } = req.params;
@@ -33,7 +36,9 @@ const submitExam = async (req, res) => {
         const userId = req.user?.id;
         if (!userId)
             return res.sendStatus(401);
+        const user = await (0, Users_1.getUserById)(Number(userId));
         const exam = await (0, Exams_1.getExamByCourseId)(Number(id));
+        const course = await (0, Courses_1.getCourseById)(Number(exam.course_id));
         if (!exam)
             return res.status(404).json({ success: false, message: "Exam not found" });
         const questions = await (0, Exams_1.getQuestionsByExamId)(exam.id);
@@ -60,6 +65,7 @@ const submitExam = async (req, res) => {
             await (0, Exams_1.saveAnswer)(submissionId, q.id, { selected_option, theory_answer, score });
         }
         await db_1.default.execute('UPDATE exam_submissions SET objective_score = ? WHERE id = ?', [objectiveScore, submissionId]);
+        await (0, ActivityLogs_1.createLog)(user.id, user.username, 'EXAM SUBMISSION', `${user.username} completed exam for ${course.title}`);
         return res.status(200).json({
             success: true,
             data: { submissionId, objectiveScore, status: 'pending' },

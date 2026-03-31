@@ -8,6 +8,8 @@ const Courses_1 = require("../models/Courses");
 const Categories_1 = require("../models/Categories");
 const Payments_1 = require("../models/Payments");
 const db_1 = __importDefault(require("../db"));
+const Users_1 = require("../models/Users");
+const ActivityLogs_1 = require("../models/ActivityLogs");
 const listCourses = async (req, res) => {
     try {
         const courses = await (0, Courses_1.getAllCourses)(true); // Filter active
@@ -72,7 +74,9 @@ const completeLesson = async (req, res) => {
         const userId = req.user?.id;
         if (!userId)
             return res.sendStatus(401);
+        const user = await (0, Users_1.getUserById)(Number(userId));
         await (0, Courses_1.trackProgress)(userId, Number(id));
+        await (0, ActivityLogs_1.createLog)(user.id, user.username, 'LESSON COURSE', `${user.username} completed a lesson`);
         return res.status(200).json({ success: true, data: null, message: "Lesson marked as complete" });
     }
     catch (err) {

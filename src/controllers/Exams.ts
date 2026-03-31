@@ -3,6 +3,9 @@ import pool from "../db";
 import { getExamByCourseId, getQuestionsByExamId, createSubmission, saveAnswer } from "../models/Exams";
 import { RowDataPacket } from "mysql2";
 import { AuthRequest } from "../middlewares/auth";
+import { createLog } from "../models/ActivityLogs";
+import { getUserById } from "../models/Users";
+import { getCourseById } from "../models/Courses";
 
 export const getCourseExam = async (req: AuthRequest, res: express.Response) => {
     try {
@@ -30,8 +33,10 @@ export const submitExam = async (req: AuthRequest, res: express.Response) => {
         const { answers } = req.body;
         const userId = req.user?.id;
         if (!userId) return res.sendStatus(401);
-
+        const user = await getUserById(Number(userId))
+        
         const exam = await getExamByCourseId(Number(id));
+        const course = await getCourseById(Number(exam.course_id))
         if (!exam) return res.status(404).json({ success: false, message: "Exam not found" });
 
         const questions = await getQuestionsByExamId(exam.id);
@@ -63,6 +68,9 @@ export const submitExam = async (req: AuthRequest, res: express.Response) => {
         }
 
         await pool.execute('UPDATE exam_submissions SET objective_score = ? WHERE id = ?', [objectiveScore, submissionId]);
+
+
+        await createLog(user.id, user.username, 'EXAM SUBMISSION', `${user.username} completed exam for ${course.title}`);
 
         return res.status(200).json({
             success: true,

@@ -9,7 +9,7 @@ import { getLogs } from "../models/ActivityLogs";
 import { sendCertificateEmail } from "../helpers/email";
 import fs from 'fs';
 import path from 'path';
-import { AuthRequest } from "middlewares/auth";
+import { AuthRequest } from "../middlewares/auth";
 import { authentication, random } from "../helpers";
 
 export const adminGetUsers = async (req: express.Request, res: express.Response) => {
@@ -280,7 +280,7 @@ export const adminGetPendingExams = async (req: express.Request, res: express.Re
                 u.username, 
                 u.email, 
                 c.title AS courseTitle,
-                c.id AS courseId, 
+                c.id AS courseId,  
                 ea.theory_answer, 
                 q.question_text
              FROM exam_submissions es
