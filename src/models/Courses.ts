@@ -9,6 +9,7 @@ export interface Course extends RowDataPacket {
     price: number;
     category_tag: string | null;
     status: 'active' | 'inactive';
+    enrollment_count?: number;
     created_at: Date;
 }
 
@@ -24,7 +25,7 @@ export interface Lesson extends RowDataPacket {
 }
 
 export const getAllCourses = async (filterActive: boolean = false): Promise<Course[]> => {
-    let query = 'SELECT * FROM courses';
+    let query = 'SELECT *, (SELECT COUNT(*) FROM enrollments WHERE enrollments.course_id = courses.id) AS enrollment_count FROM courses';
     if (filterActive) {
         query += " WHERE status = 'active'";
     }
