@@ -1,5 +1,4 @@
 import express from 'express';
-
 import { login, signup, logout, forgotPassword, verifyOtp, resetPassword } from '../controllers/Auth';
 import { listCourses, getCourseDetails, getLessonDetails, completeLesson, getMyCourses, listCategories, getCourseLessons, getProgress, getUserCertificate } from '../controllers/Courses';
 import { getCourseExam, submitExam, getUserExamHistory } from '../controllers/Exams';
