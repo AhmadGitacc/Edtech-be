@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.updateLesson = exports.setCourseStatus = exports.deleteLesson = exports.updateCourse = exports.deleteCourse = exports.getProgress = exports.trackProgress = exports.getLessonById = exports.getLessonsByCourseId = exports.getCourseById = exports.getAllCourses = void 0;
 const db_1 = __importDefault(require("../db"));
 const getAllCourses = async (filterActive = false) => {
-    let query = 'SELECT * FROM courses';
+    let query = 'SELECT *, (SELECT COUNT(*) FROM enrollments WHERE enrollments.course_id = courses.id) AS enrollment_count FROM courses';
     if (filterActive) {
         query += " WHERE status = 'active'";
     }

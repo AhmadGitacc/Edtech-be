@@ -1,9 +1,9 @@
 import express from "express";
-import bcrypt from "bcryptjs";
-import { createUser, getUserByEmail, setUserStatus } from "../models/Users";
+import { createUser, getUserByEmail, setUserStatus, updateUserById } from "../models/Users";
 import { createLog } from "../models/ActivityLogs";
 import jwt from "jsonwebtoken";
 import { authentication, random } from "../helpers";
+import { sendForgotPasswordEmail } from "../helpers/email";
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
@@ -39,7 +39,7 @@ export const login = async (req: express.Request, res: express.Response) => {
         res.cookie('auth_token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
-            maxAge: 24 * 60 * 60 * 1000 // 24 hours
+            maxAge: 48 * 60 * 60 * 1000 // 48 hours
         });
 
         const { password: _, ...userWithoutPassword } = user;
@@ -106,5 +106,115 @@ export const logout = async (req: express.Request, res: express.Response) => {
             success: true, 
             message: "Session cleared with errors" 
         });
+    }
+};
+
+export const forgotPassword = async (req: express.Request, res: express.Response) => {
+    try {
+        const { email } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ success: false, data: null, message: "Email is required" });
+        }
+
+        const user = await getUserByEmail(email);
+        if (!user) {
+            // Return success even if user not found to prevent email enumeration
+            return res.status(200).json({ success: true, message: "If your email is registered, you will receive an OTP shortly." });
+        }
+
+        //6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        
+        // Expiry time: 15 minutes from now
+        const expiresAt = new Date();
+        expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+
+        await updateUserById(user.id, {
+            reset_otp: otp,
+            reset_otp_expires_at: expiresAt
+        });
+
+        // Send email
+        const emailResult = await sendForgotPasswordEmail(email, otp);
+        if (!emailResult.success) {
+            console.error("Failed to send forgot password email", emailResult.error);
+            // Optionally, we could still return success to not leak that email exists, but let's be honest about the error
+            return res.status(500).json({ success: false, data: null, message: "Failed to send OTP email" });
+        }
+
+        return res.status(200).json({ success: true, message: "If your email is registered, you will receive an OTP shortly." });
+    } catch (err) {
+        console.error("Forgot Password Error:", err);
+        return res.status(500).json({ success: false, data: null, message: "Internal server error" });
+    }
+};
+
+export const verifyOtp = async (req: express.Request, res: express.Response) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            return res.status(400).json({ success: false, data: null, message: "Email and OTP are required" });
+        }
+
+        const user = await getUserByEmail(email);
+        if (!user) {
+            return res.status(400).json({ success: false, data: null, message: "Invalid email or OTP" });
+        }
+
+        if (!user.reset_otp || user.reset_otp !== otp) {
+            return res.status(400).json({ success: false, data: null, message: "Invalid OTP" });
+        }
+
+        if (!user.reset_otp_expires_at || new Date(user.reset_otp_expires_at) < new Date()) {
+            return res.status(400).json({ success: false, data: null, message: "OTP has expired" });
+        }
+
+        return res.status(200).json({ success: true, message: "OTP verified successfully" });
+    } catch (err) {
+        console.error("Verify OTP Error:", err);
+        return res.status(500).json({ success: false, data: null, message: "Internal server error" });
+    }
+};
+
+export const resetPassword = async (req: express.Request, res: express.Response) => {
+    try {
+        const { email, otp, newPassword } = req.body;
+
+        if (!email || !otp || !newPassword) {
+            return res.status(400).json({ success: false, data: null, message: "Email, OTP, and new password are required" });
+        }
+
+        const user = await getUserByEmail(email);
+        if (!user) {
+            return res.status(400).json({ success: false, data: null, message: "Invalid email or OTP" });
+        }
+
+        // Verify OTP again
+        if (!user.reset_otp || user.reset_otp !== otp) {
+            return res.status(400).json({ success: false, data: null, message: "Invalid OTP" });
+        }
+
+        if (!user.reset_otp_expires_at || new Date(user.reset_otp_expires_at) < new Date()) {
+            return res.status(400).json({ success: false, data: null, message: "OTP has expired" });
+        }
+
+        // Hash new password
+        const salt = random();
+        const passwordHash = authentication(salt, newPassword);
+
+        // Update user
+        await updateUserById(user.id, {
+            password: passwordHash,
+            salt: salt,
+            reset_otp: null,
+            reset_otp_expires_at: null
+        });
+
+        return res.status(200).json({ success: true, message: "Password reset successfully" });
+    } catch (err) {
+        console.error("Reset Password Error:", err);
+        return res.status(500).json({ success: false, data: null, message: "Internal server error" });
     }
 };

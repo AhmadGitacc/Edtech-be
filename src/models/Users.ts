@@ -10,6 +10,8 @@ export interface User extends RowDataPacket {
     role: 'student' | 'admin';
     is_active: boolean;
     created_at: Date;
+    reset_otp?: string | null;
+    reset_otp_expires_at?: Date | null;
 }
 
 export const createUser = async (username: string, email: string, passwordHash: string, salt: string): Promise<number> => {

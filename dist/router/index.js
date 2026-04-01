@@ -21,6 +21,9 @@ exports.default = () => {
     router.post('/auth/login', Auth_1.login);
     router.post('/auth/logout', auth_1.isAuthenticated, Auth_1.logout);
     router.post('/auth/update', auth_1.isAuthenticated, Users_1.updateUser);
+    router.post('/auth/forgot-password', Auth_1.forgotPassword);
+    router.post('/auth/verify-otp', Auth_1.verifyOtp);
+    router.post('/auth/reset-password', Auth_1.resetPassword);
     // Categories
     router.get('/categories', Courses_1.listCategories);
     // Courses & Lessons

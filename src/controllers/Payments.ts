@@ -38,7 +38,7 @@ export const initializePayment = async (req: AuthRequest, res: express.Response)
 
         await createEnrollment(userId, Number(courseId), reference);
 
-        await createLog(user.id, user.username, 'ENROLLMENT', `${user.username} paid for ${course.title} (awaiting payment confirmation)`);
+        await createLog(user.id, user.username, 'PAYMENT_INIT', `Started payment for ${course.title}`);
 
         return res.status(200).json({ success: true, data: { authorization_url, reference }, message: "Payment initialized" });
     } catch (err) {

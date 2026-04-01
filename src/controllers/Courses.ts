@@ -99,25 +99,26 @@ export const getMyCourses = async (req: AuthRequest, res: express.Response) => {
         if (!userId) return res.sendStatus(401);
 
         const query = `
-            SELECT 
-                c.id, 
-                c.title, 
-                c.description, 
-                c.cover_image,
-                c.price,
-                c.category_tag,
-                e.STATUS as enrollment_status,
-                (SELECT COUNT(*) FROM lessons l WHERE l.course_id = c.id) as total_lessons,
-                (SELECT COUNT(*) 
-                 FROM user_progress up 
-                 JOIN lessons l ON up.lesson_id = l.id 
-                 WHERE l.course_id = c.id 
-                 AND up.user_id = ? 
-                 AND up.completed = true) as completed_lessons
-            FROM courses c
-            JOIN enrollments e ON e.course_id = c.id
-            WHERE e.user_id = ?;
-        `;
+    SELECT DISTINCT
+        c.id, 
+        c.title, 
+        c.description, 
+        c.cover_image,
+        c.price,
+        c.category_tag,
+        e.STATUS as enrollment_status,
+        (SELECT COUNT(*) FROM lessons l WHERE l.course_id = c.id) as total_lessons,
+        (SELECT COUNT(*) 
+         FROM user_progress up 
+         JOIN lessons l ON up.lesson_id = l.id 
+         WHERE l.course_id = c.id 
+         AND up.user_id = ? 
+         AND up.completed = true) as completed_lessons
+    FROM courses c
+    JOIN enrollments e ON e.course_id = c.id
+    WHERE e.user_id = ? 
+    AND e.STATUS = 'success'; -- Only fetch completed/paid enrollments
+`;
 
         const [enrollments] = await pool.execute(query, [userId, userId]);
 

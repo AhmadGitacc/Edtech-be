@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { login, signup, logout } from '../controllers/Auth';
+import { login, signup, logout, forgotPassword, verifyOtp, resetPassword } from '../controllers/Auth';
 import { listCourses, getCourseDetails, getLessonDetails, completeLesson, getMyCourses, listCategories, getCourseLessons, getProgress, getUserCertificate } from '../controllers/Courses';
 import { getCourseExam, submitExam, getUserExamHistory } from '../controllers/Exams';
 import { initializePayment, paystackWebhook } from '../controllers/Payments';
@@ -21,6 +21,9 @@ export default (): express.Router => {
     router.post('/auth/login', login);
     router.post('/auth/logout', isAuthenticated, logout);
     router.post('/auth/update', isAuthenticated, updateUser);
+    router.post('/auth/forgot-password', forgotPassword);
+    router.post('/auth/verify-otp', verifyOtp);
+    router.post('/auth/reset-password', resetPassword);
 
     // Categories
     router.get('/categories', listCategories);
