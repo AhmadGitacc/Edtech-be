@@ -6,7 +6,7 @@ import { createCertificate, createExam, updateExam, deleteExam, addQuestion, upd
 import { deleteCourse, deleteLesson, setCourseStatus, getAllCourses, updateCourse, updateLesson, getLessonsByCourseId } from "../models/Courses";
 import { createCategory } from "../models/Categories";
 import { getLogs } from "../models/ActivityLogs";
-import { sendCertificateEmail } from "../helpers/email";
+import { sendCertificateEmail, sendFailedEmail } from "../helpers/email";
 import fs from 'fs';
 import path from 'path';
 import { AuthRequest } from "../middlewares/auth";
@@ -319,7 +319,7 @@ export const adminFinalizeSubmission = async (req: express.Request, res: express
         const { objective_score, pass_percentage, user_id, course_id, email } = rows[0];
         
         const totalScore = Number(objective_score) + Number(theoryScore);
-        const passed = totalScore >= (pass_percentage || 50); 
+        const passed = totalScore >= (pass_percentage); 
         const finalStatus = passed ? "approved" : "failed";
 
         await pool.execute(
@@ -332,6 +332,9 @@ export const adminFinalizeSubmission = async (req: express.Request, res: express
             certUuid = await createCertificate(user_id, course_id);
             await sendCertificateEmail(email, certUuid);
             console.log(`Certificate ${certUuid} sent to ${email}`);
+        }else{
+            await sendFailedEmail(email);
+            console.log(`Failed email sent to ${email}`);
         }
 
         return res.status(200).json({ 

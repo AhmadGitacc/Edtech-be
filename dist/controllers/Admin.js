@@ -277,7 +277,7 @@ const adminFinalizeSubmission = async (req, res) => {
             return res.status(404).json({ success: false, message: "Submission not found" });
         const { objective_score, pass_percentage, user_id, course_id, email } = rows[0];
         const totalScore = Number(objective_score) + Number(theoryScore);
-        const passed = totalScore >= (pass_percentage || 50);
+        const passed = totalScore >= (pass_percentage);
         const finalStatus = passed ? "approved" : "failed";
         await db_1.default.execute('UPDATE exam_submissions SET theory_score = ?, total_score = ?, status = ?, passed = ? WHERE id = ?', [theoryScore, totalScore, finalStatus, passed ? 1 : 0, id]);
         let certUuid = null;
@@ -285,6 +285,10 @@ const adminFinalizeSubmission = async (req, res) => {
             certUuid = await (0, Exams_1.createCertificate)(user_id, course_id);
             await (0, email_1.sendCertificateEmail)(email, certUuid);
             console.log(`Certificate ${certUuid} sent to ${email}`);
+        }
+        else {
+            await (0, email_1.sendFailedEmail)(email);
+            console.log(`Failed email sent to ${email}`);
         }
         return res.status(200).json({
             success: true,

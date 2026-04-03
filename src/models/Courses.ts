@@ -25,7 +25,16 @@ export interface Lesson extends RowDataPacket {
 }
 
 export const getAllCourses = async (filterActive: boolean = false): Promise<Course[]> => {
-    let query = 'SELECT *, (SELECT COUNT(*) FROM enrollments WHERE enrollments.course_id = courses.id) AS enrollment_count FROM courses';
+    let query = `
+    SELECT 
+        *, 
+        (SELECT COUNT(*) 
+         FROM enrollments 
+         WHERE enrollments.course_id = courses.id 
+         AND LOWER(enrollments.STATUS) = 'success'
+        ) AS enrollment_count 
+    FROM courses`;
+    
     if (filterActive) {
         query += " WHERE status = 'active'";
     }

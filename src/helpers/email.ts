@@ -28,6 +28,30 @@ export const sendCertificateEmail = async (email: string, certificateUuid: strin
     }
 };
 
+export const sendFailedEmail = async (email: string) => {
+    try {
+        const { data, error } = await resend.emails.send({
+            from: 'CityCruise International <onboarding@resend.dev>',
+            to: [email],
+            subject: 'Your Exam Result',
+            html: `
+                <h1>Failed</h1>
+                <p>You have not met the passing criteria for the exam. Please review the course materials and try again.</p>
+            `,
+        });
+
+        if (error) {
+            console.error('Error sending email:', error);
+            return { success: false, error };
+        }
+
+        return { success: true, data };
+    } catch (error) {
+        console.error('Exception sending email:', error);
+        return { success: false, error };
+    }
+};
+
 export const sendEnquiryEmail = async (email: string, fullname: string, message: string) => {
     try {
         const { data, error } = await resend.emails.send({
