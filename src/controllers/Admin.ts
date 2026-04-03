@@ -323,8 +323,8 @@ export const adminFinalizeSubmission = async (req: express.Request, res: express
         const finalStatus = passed ? "approved" : "failed";
 
         await pool.execute(
-            'UPDATE exam_submissions SET theory_score = ?, total_score = ?, status = ?, passed = ? WHERE id = ?',
-            [theoryScore, totalScore, finalStatus, passed ? 1 : 0, id]
+            'UPDATE exam_submissions SET theory_score = ?, total_score = ?, status = ? WHERE id = ?',
+            [theoryScore, totalScore, finalStatus, id]
         );
 
         let certUuid = null;

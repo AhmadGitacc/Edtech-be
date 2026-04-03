@@ -52,6 +52,36 @@ All API responses follow this consistent structure:
 - **Response:** `{ "success": true, "message": "Logged out successfully" }`
 - **Note:** Clears the `auth_token` cookie and marks the user as inactive.
 
+### 4. Forgot Password Flow
+**Sequence:** `forgot-password` -> `verify-otp` -> `reset-password`
+
+#### a. Request OTP
+- **Endpoint:** `POST /auth/forgot-password`
+- **Request Body:**
+  | Field | Type | Required | Description |
+  | :--- | :--- | :--- | :--- |
+  | `email` | string | Yes | Registered email address |
+- **Response:** `{ "success": true, "message": "If your email is registered, you will receive an OTP shortly." }`
+
+#### b. Verify OTP
+- **Endpoint:** `POST /auth/verify-otp`
+- **Request Body:**
+  | Field | Type | Required | Description |
+  | :--- | :--- | :--- | :--- |
+  | `email` | string | Yes | User's email |
+  | `otp` | string | Yes | 6-digit OTP received via email |
+- **Response:** `{ "success": true, "message": "OTP verified successfully" }`
+
+#### c. Reset Password
+- **Endpoint:** `POST /auth/reset-password`
+- **Request Body:**
+  | Field | Type | Required | Description |
+  | :--- | :--- | :--- | :--- |
+  | `email` | string | Yes | User's email |
+  | `otp` | string | Yes | Confirmed 6-digit OTP |
+  | `newPassword` | string | Yes | New secure password |
+- **Response:** `{ "success": true, "message": "Password reset successfully" }`
+
 ---
 
 ## 📚 Courses & Lessons

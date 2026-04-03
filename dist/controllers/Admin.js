@@ -279,7 +279,7 @@ const adminFinalizeSubmission = async (req, res) => {
         const totalScore = Number(objective_score) + Number(theoryScore);
         const passed = totalScore >= (pass_percentage);
         const finalStatus = passed ? "approved" : "failed";
-        await db_1.default.execute('UPDATE exam_submissions SET theory_score = ?, total_score = ?, status = ?, passed = ? WHERE id = ?', [theoryScore, totalScore, finalStatus, passed ? 1 : 0, id]);
+        await db_1.default.execute('UPDATE exam_submissions SET theory_score = ?, total_score = ?, status = ? WHERE id = ?', [theoryScore, totalScore, finalStatus, id]);
         let certUuid = null;
         if (passed) {
             certUuid = await (0, Exams_1.createCertificate)(user_id, course_id);
