@@ -34,7 +34,7 @@ export const submitExam = async (req: AuthRequest, res: express.Response) => {
         const userId = req.user?.id;
         if (!userId) return res.sendStatus(401);
         const user = await getUserById(Number(userId))
-        
+
         const exam = await getExamByCourseId(Number(id));
         const course = await getCourseById(Number(exam.course_id))
         if (!exam) return res.status(404).json({ success: false, message: "Exam not found" });
@@ -49,20 +49,20 @@ export const submitExam = async (req: AuthRequest, res: express.Response) => {
             let score = 0;
             let theory_answer = null;
             let selected_option = null;
-            
+
             if (userAnswer) {
                 theory_answer = userAnswer.theory_answer;
                 selected_option = userAnswer.selected_option;
-                
-                if (q.TYPE === 'objective'&& selected_option !== null) {
+
+                if (q.TYPE === 'objective' && selected_option !== null) {
                     if (Number(selected_option) === Number(q.correct_option)) {
                         score = 1;
                         objectiveScore++;
                     }
-                } else if (q.TYPE === 'theory'&& theory_answer !== null) {
+                } else if (q.TYPE === 'theory' && theory_answer !== null) {
                     score = 0; // To be marked by admin
                 }
-                
+
             }
             await saveAnswer(submissionId, q.id, { selected_option, theory_answer, score });
         }
@@ -89,18 +89,36 @@ export const getUserExamHistory = async (req: AuthRequest, res: express.Response
         if (!userId) return res.sendStatus(401);
 
         const [rows] = await pool.execute<RowDataPacket[]>(
-            `SELECT es.*, e.title as exam_title, c.title as course_title 
-             FROM exam_submissions es
-             JOIN exams e ON es.exam_id = e.id
-             JOIN courses c ON e.course_id = c.id
-             WHERE es.user_id = ?
-             ORDER BY es.created_at DESC`,
+            `SELECT 
+    es.id,
+    es.total_score,
+    es.STATUS,
+    es.created_at,
+    e.title AS exam_title,
+    e.pass_percentage,
+    e.course_id,
+    c.title AS course_title
+FROM exam_submissions es
+LEFT JOIN exams e ON es.exam_id = e.id
+LEFT JOIN courses c ON e.course_id = c.id
+WHERE es.user_id = ?
+ORDER BY es.created_at DESC;`,
             [userId]
         );
 
-        return res.status(200).json({ success: true, data: rows, message: "Exam history fetched" });
+        const formattedRows = rows.map(row => ({
+            ...row,
+            passed: row.STATUS === 'approved',
+            score: row.total_score
+        }));
+
+        return res.status(200).json({
+            success: true,
+            data: formattedRows,
+            message: "Exam history fetched"
+        });
     } catch (err) {
-        console.error(err);
+        console.error("SQL Error in Exam History:", err);
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };

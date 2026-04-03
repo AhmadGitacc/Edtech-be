@@ -83,16 +83,33 @@ const getUserExamHistory = async (req, res) => {
         const userId = req.user?.id;
         if (!userId)
             return res.sendStatus(401);
-        const [rows] = await db_1.default.execute(`SELECT es.*, e.title as exam_title, c.title as course_title 
-             FROM exam_submissions es
-             JOIN exams e ON es.exam_id = e.id
-             JOIN courses c ON e.course_id = c.id
-             WHERE es.user_id = ?
-             ORDER BY es.created_at DESC`, [userId]);
-        return res.status(200).json({ success: true, data: rows, message: "Exam history fetched" });
+        const [rows] = await db_1.default.execute(`SELECT 
+    es.id,
+    es.total_score,
+    es.STATUS,
+    es.created_at,
+    e.title AS exam_title,
+    e.pass_percentage,
+    e.course_id,
+    c.title AS course_title
+FROM exam_submissions es
+LEFT JOIN exams e ON es.exam_id = e.id
+LEFT JOIN courses c ON e.course_id = c.id
+WHERE es.user_id = ?
+ORDER BY es.created_at DESC;`, [userId]);
+        const formattedRows = rows.map(row => ({
+            ...row,
+            passed: row.STATUS === 'approved',
+            score: row.total_score
+        }));
+        return res.status(200).json({
+            success: true,
+            data: formattedRows,
+            message: "Exam history fetched"
+        });
     }
     catch (err) {
-        console.error(err);
+        console.error("SQL Error in Exam History:", err);
         return res.status(500).json({ success: false, message: "Internal server error" });
     }
 };
