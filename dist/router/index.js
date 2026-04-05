@@ -58,6 +58,7 @@ exports.default = () => {
     router.get('/admin/stats', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetStats);
     router.post('/admin/categories', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminCreateCategory);
     router.get('/admin/activity-logs', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetActivityLogs);
+    router.get('/admin/certificates', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetCertificates);
     // Exam Management
     router.get('/admin/exams/pending', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminGetPendingExams);
     router.patch('/submissions/:id/finalize', auth_1.isAuthenticated, auth_1.isAdmin, Admin_1.adminFinalizeSubmission);

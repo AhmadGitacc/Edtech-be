@@ -489,5 +489,24 @@ export const adminGetCourseLessons = async (req: express.Request, res: express.R
     }
 };
 
+export const adminGetCertificates = async (req: express.Request, res: express.Response) => {
+    try {
+        const query = `
+            SELECT 
+                cert.certificate_uuid, 
+                cert.created_at AS issue_date,
+                c.title AS course_title,
+                u.username
+            FROM certificates cert
+            JOIN courses c ON cert.course_id = c.id
+            JOIN users u ON cert.user_id = u.id
+            ORDER BY cert.created_at DESC
+        `;
+        const [rows] = await pool.execute(query);
 
-
+        return res.status(200).json({ success: true, data: rows, message: "All certificates fetched" });
+    } catch (err) {
+        console.error("Fetch All Certificates Error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};

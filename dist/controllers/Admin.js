@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.adminGetCourseLessons = exports.adminUpdateLesson = exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminGetCourseExam = exports.adminFinalizeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminUpdateCourse = exports.adminCreateCourse = exports.adminUpdateUser = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
+exports.adminGetCertificates = exports.adminGetCourseLessons = exports.adminUpdateLesson = exports.adminToggleCourseStatus = exports.adminListCourses = exports.adminDeleteQuestion = exports.adminUpdateQuestion = exports.adminAddQuestion = exports.adminDeleteExam = exports.adminUpdateExam = exports.adminCreateExam = exports.adminGetCourseExam = exports.adminFinalizeSubmission = exports.adminGetPendingExams = exports.adminGetActivityLogs = exports.adminCreateCategory = exports.adminGetStats = exports.adminDeleteLesson = exports.adminDeleteCourse = exports.adminCreateLesson = exports.adminUpdateCourse = exports.adminCreateCourse = exports.adminUpdateUser = exports.adminToggleUserStatus = exports.adminGetUsers = void 0;
 const db_1 = __importDefault(require("../db"));
 const Users_1 = require("../models/Users");
 const Exams_1 = require("../models/Exams");
@@ -451,4 +451,26 @@ const adminGetCourseLessons = async (req, res) => {
     }
 };
 exports.adminGetCourseLessons = adminGetCourseLessons;
+const adminGetCertificates = async (req, res) => {
+    try {
+        const query = `
+            SELECT 
+                cert.certificate_uuid, 
+                cert.created_at AS issue_date,
+                c.title AS course_title,
+                u.username
+            FROM certificates cert
+            JOIN courses c ON cert.course_id = c.id
+            JOIN users u ON cert.user_id = u.id
+            ORDER BY cert.created_at DESC
+        `;
+        const [rows] = await db_1.default.execute(query);
+        return res.status(200).json({ success: true, data: rows, message: "All certificates fetched" });
+    }
+    catch (err) {
+        console.error("Fetch All Certificates Error:", err);
+        return res.status(500).json({ success: false, message: "Internal server error" });
+    }
+};
+exports.adminGetCertificates = adminGetCertificates;
 //# sourceMappingURL=Admin.js.map
