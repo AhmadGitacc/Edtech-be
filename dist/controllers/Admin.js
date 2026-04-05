@@ -454,7 +454,7 @@ exports.adminGetCourseLessons = adminGetCourseLessons;
 const adminGetCertificates = async (req, res) => {
     try {
         const query = `
-            SELECT 
+            SELECT
                 cert.certificate_uuid, 
                 cert.created_at AS issue_date,
                 c.title AS course_title,

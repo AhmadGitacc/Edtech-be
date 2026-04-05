@@ -492,7 +492,7 @@ export const adminGetCourseLessons = async (req: express.Request, res: express.R
 export const adminGetCertificates = async (req: express.Request, res: express.Response) => {
     try {
         const query = `
-            SELECT 
+            SELECT
                 cert.certificate_uuid, 
                 cert.created_at AS issue_date,
                 c.title AS course_title,
