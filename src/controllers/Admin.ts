@@ -502,7 +502,8 @@ export const adminGetCertificates = async (req: express.Request, res: express.Re
                 cert.certificate_uuid, 
                 cert.created_at AS issue_date,
                 c.title AS course_title,
-                u.username
+                u.username,
+                u.email
             FROM certificates cert
             JOIN courses c ON cert.course_id = c.id
             JOIN users u ON cert.user_id = u.id
