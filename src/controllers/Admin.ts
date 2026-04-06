@@ -103,8 +103,14 @@ export const adminCreateCourse = async (req: express.Request, res: express.Respo
         }
 
         const [result] = await pool.execute<ResultSetHeader>(
-            'INSERT INTO courses (title, description, price, catergory_tag, cover_image) VALUES (?, ?, ?, ?, ?)',
-            [title, description, price, category_tag, coverImagePath]
+            'INSERT INTO courses (title, description, price, category_tag, cover_image) VALUES (?, ?, ?, ?, ?)',
+            [
+                title ?? null,
+                description ?? null,
+                price ?? 0,
+                category_tag ?? null,
+                coverImagePath
+            ]
         );
 
         return res.status(201).json({
@@ -272,7 +278,7 @@ export const adminGetActivityLogs = async (req: express.Request, res: express.Re
 export const adminGetPendingExams = async (req: express.Request, res: express.Response) => {
     try {
         const [rows] = await pool.execute<RowDataPacket[]>(
-                `SELECT 
+            `SELECT 
                 es.id, 
                 es.user_id, 
                 es.objective_score, 
@@ -317,9 +323,9 @@ export const adminFinalizeSubmission = async (req: express.Request, res: express
         if (rows.length === 0) return res.status(404).json({ success: false, message: "Submission not found" });
 
         const { objective_score, pass_percentage, user_id, course_id, email } = rows[0];
-        
+
         const totalScore = Number(objective_score) + Number(theoryScore);
-        const passed = totalScore >= (pass_percentage); 
+        const passed = totalScore >= (pass_percentage);
         const finalStatus = passed ? "approved" : "failed";
 
         await pool.execute(
@@ -332,18 +338,18 @@ export const adminFinalizeSubmission = async (req: express.Request, res: express
             certUuid = await createCertificate(user_id, course_id);
             await sendCertificateEmail(email, certUuid);
             console.log(`Certificate ${certUuid} sent to ${email}`);
-        }else{
+        } else {
             await sendFailedEmail(email);
             console.log(`Failed email sent to ${email}`);
         }
 
-        return res.status(200).json({ 
-            success: true, 
-            data: { 
-                finalScore: totalScore, 
-                passed, 
-                certificateUuid: certUuid 
-            }, 
+        return res.status(200).json({
+            success: true,
+            data: {
+                finalScore: totalScore,
+                passed,
+                certificateUuid: certUuid
+            },
             message: passed ? "Graded, approved, and certificate sent!" : "Graded. Candidate did not meet pass requirements."
         });
 

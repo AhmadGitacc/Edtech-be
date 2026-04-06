@@ -91,7 +91,13 @@ const adminCreateCourse = async (req, res) => {
             fs_1.default.writeFileSync(uploadPath, req.file.buffer);
             coverImagePath = `/uploads/${fileName}`;
         }
-        const [result] = await db_1.default.execute('INSERT INTO courses (title, description, price, catergory_tag, cover_image) VALUES (?, ?, ?, ?, ?)', [title, description, price, category_tag, coverImagePath]);
+        const [result] = await db_1.default.execute('INSERT INTO courses (title, description, price, category_tag, cover_image) VALUES (?, ?, ?, ?, ?)', [
+            title ?? null,
+            description ?? null,
+            price ?? 0,
+            category_tag ?? null,
+            coverImagePath
+        ]);
         return res.status(201).json({
             success: true,
             data: { id: result.insertId, coverImage: coverImagePath }
