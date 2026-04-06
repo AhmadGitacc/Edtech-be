@@ -79,7 +79,7 @@ const adminUpdateUser = async (req, res) => {
 exports.adminUpdateUser = adminUpdateUser;
 const adminCreateCourse = async (req, res) => {
     try {
-        const { title, description, price, video_link } = req.body;
+        const { title, description, price, category_tag } = req.body;
         let coverImagePath = null;
         if (req.file) {
             const fileName = `${Date.now()}-${req.file.originalname.replace(/\s/g, '_')}`;
@@ -91,7 +91,7 @@ const adminCreateCourse = async (req, res) => {
             fs_1.default.writeFileSync(uploadPath, req.file.buffer);
             coverImagePath = `/uploads/${fileName}`;
         }
-        const [result] = await db_1.default.execute('INSERT INTO courses (title, description, price, video_link, cover_image) VALUES (?, ?, ?, ?, ?)', [title, description, price, video_link, coverImagePath]);
+        const [result] = await db_1.default.execute('INSERT INTO courses (title, description, price, catergory_tag, cover_image) VALUES (?, ?, ?, ?, ?)', [title, description, price, category_tag, coverImagePath]);
         return res.status(201).json({
             success: true,
             data: { id: result.insertId, coverImage: coverImagePath }
@@ -142,8 +142,8 @@ exports.adminUpdateCourse = adminUpdateCourse;
 const adminCreateLesson = async (req, res) => {
     try {
         const { id } = req.params; // courseId
-        const { title, content, orderIndex, videoLink, videoId, libraryId } = req.body;
-        console.log("Creating Lesson with data:", { id, title, videoLink, videoId });
+        const { title, content, orderIndex, video_link, videoId, libraryId } = req.body;
+        console.log("Creating Lesson with data:", { id, title, video_link, videoId });
         const [result] = await db_1.default.execute(`INSERT INTO lessons 
             (course_id, title, content, video_id, video_link, library_id, order_index) 
             VALUES (?, ?, ?, ?, ?, ?, ?)`, [
@@ -151,7 +151,7 @@ const adminCreateLesson = async (req, res) => {
             title ?? null,
             content ?? null,
             videoId ?? null,
-            videoLink ?? null,
+            video_link ?? null,
             libraryId ?? null,
             orderIndex ?? 0
         ]);
@@ -160,7 +160,7 @@ const adminCreateLesson = async (req, res) => {
             data: {
                 id: result.insertId,
                 videoId,
-                videoLink,
+                video_link,
                 libraryId
             },
             message: "Lesson created successfully"

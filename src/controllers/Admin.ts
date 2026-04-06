@@ -84,7 +84,7 @@ export const adminUpdateUser = async (req: express.Request, res: express.Respons
 
 export const adminCreateCourse = async (req: express.Request, res: express.Response) => {
     try {
-        const { title, description, price, video_link } = req.body;
+        const { title, description, price, category_tag } = req.body;
         let coverImagePath = null;
 
         if (req.file) {
@@ -103,8 +103,8 @@ export const adminCreateCourse = async (req: express.Request, res: express.Respo
         }
 
         const [result] = await pool.execute<ResultSetHeader>(
-            'INSERT INTO courses (title, description, price, video_link, cover_image) VALUES (?, ?, ?, ?, ?)',
-            [title, description, price, video_link, coverImagePath]
+            'INSERT INTO courses (title, description, price, catergory_tag, cover_image) VALUES (?, ?, ?, ?, ?)',
+            [title, description, price, category_tag, coverImagePath]
         );
 
         return res.status(201).json({
@@ -171,12 +171,12 @@ export const adminCreateLesson = async (req: express.Request, res: express.Respo
             title,
             content,
             orderIndex,
-            videoLink,
+            video_link,
             videoId,
             libraryId
         } = req.body;
 
-        console.log("Creating Lesson with data:", { id, title, videoLink, videoId });
+        console.log("Creating Lesson with data:", { id, title, video_link, videoId });
 
         const [result] = await pool.execute<ResultSetHeader>(
             `INSERT INTO lessons 
@@ -187,7 +187,7 @@ export const adminCreateLesson = async (req: express.Request, res: express.Respo
                 title ?? null,
                 content ?? null,
                 videoId ?? null,
-                videoLink ?? null,
+                video_link ?? null,
                 libraryId ?? null,
                 orderIndex ?? 0
             ]
@@ -198,7 +198,7 @@ export const adminCreateLesson = async (req: express.Request, res: express.Respo
             data: {
                 id: result.insertId,
                 videoId,
-                videoLink,
+                video_link,
                 libraryId
             },
             message: "Lesson created successfully"
